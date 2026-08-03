@@ -13,7 +13,7 @@ top-level folder, independently versioned and published:
   (`ARC76Account.Algorand`, `.Ethereum`, `.Bitcoin`, `.BitcoinCash`, `.Solana`). See
   [`dotnet/AGENTS.md`](dotnet/AGENTS.md).
 - **`typescript/`** — TypeScript/JS, a pnpm workspace publishing one npm package per chain
-  (`arc76-core` + `arc76-algorand`, `.ethereum`, `.bitcoin`, `.bitcoincash`, `.solana`),
+  (`@arc76/core` + `@arc76/algorand`, `.ethereum`, `.bitcoin`, `.bitcoincash`, `.solana`),
   mirroring `dotnet/`'s architecture. See [`typescript/AGENTS.md`](typescript/AGENTS.md).
 - **`python/`** — reserved for a future PyPI package. Not implemented yet — no AGENTS.md there
   until there's something to document.
@@ -60,9 +60,11 @@ No root `.editorconfig`.
   projects' own folder against the previous commit and packs+pushes only the ones that
   changed, via NuGet Trusted Publishing (OIDC, no stored API key). `--skip-duplicate` is kept
   as a defensive fallback, not the primary gate.
-- `publish-npm.yml` — path-triggered on `typescript/**` only; diffs each of the six `arc76-*`
-  packages' own folder independently and publishes only the ones that changed, via npm Trusted
-  Publishing (OIDC).
+- `publish-npm.yml` — path-triggered on `typescript/**` only; diffs each of the six `@arc76/*`
+  packages' own folder independently and publishes only the ones that changed, via a classic
+  npm Automation token (`NPM_TOKEN` secret) — not OIDC, since npm's Trusted Publishing requires
+  a package to already exist, which doesn't hold for six brand-new `@arc76/*` scoped packages.
+  See `docs/github-secrets-setup.md` for the migration path to OIDC once they exist.
 
 **Versions are computed by CI, not hand-maintained** — see `dotnet/AGENTS.md` and
 `typescript/AGENTS.md`'s "Versioning" sections. In short: `1.0.{increment}.{yyyyMMddHH}` for
@@ -76,9 +78,9 @@ is always readable directly from the version number — that's the point of the 
 `typescript/`) — that's deliberate, so running an audit never force-publishes anything. If you
 add a third workflow or change these triggers, preserve that property: publishing should only
 ever be a side effect of an actual `dotnet/` or `typescript/` code change, never of unrelated
-repo activity. See the root `README.md`'s "Automated publishing" section for the one-time
-nuget.org/npmjs.com/GitHub setup these workflows assume (Trusted Publishing policies, the
-optional `release` environment, the `NUGET_USER` secret).
+repo activity. See `docs/github-secrets-setup.md` for the one-time nuget.org/npmjs.com/GitHub
+setup these workflows assume (the NuGet Trusted Publishing policy, the `@arc76` npm org, the
+`NUGET_USER`/`NPM_TOKEN` secrets, the optional `release` environment).
 
 ## History
 
@@ -91,7 +93,7 @@ optional `release` environment, the `NUGET_USER` secret).
   fresh copy, not a history-preserving merge — its original repo/history is untouched and lives
   separately on GitHub).
 - Immediately after: `typescript/` was itself split from the single `arc76` package into a
-  pnpm workspace with one package per chain (`arc76-core` + `arc76-algorand`/`.ethereum`/
+  pnpm workspace with one package per chain (`@arc76/core` + `@arc76/algorand`/`.ethereum`/
   `.bitcoin`/`.bitcoincash`/`.solana`), mirroring `dotnet/`'s per-chain package architecture,
   and switched from npm to pnpm as its package manager.
 - A professional "network of chains" logo (`assets/arc76-logo-512.png`) was created and wired

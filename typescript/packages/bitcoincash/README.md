@@ -1,4 +1,4 @@
-# arc76-bitcoincash
+# @arc76/bitcoincash
 
 <p align="center"><img src="../../../assets/arc76-logo-512.png" alt="ARC76 Account" width="140"></p>
 
@@ -8,13 +8,13 @@ account derivation for **Bitcoin Cash**.
 ## Usage
 
 ```
-npm i arc76-bitcoincash --save
+npm i @arc76/bitcoincash --save
 ```
 
 ```ts
 import * as bitcoin from "bitcoinjs-lib";
 import { encode } from "cashaddrjs";
-import { getAccount, getEmailAccount } from "arc76-bitcoincash";
+import { getAccount, getEmailAccount } from "@arc76/bitcoincash";
 
 const account = await getAccount(password); // slot 0, an ECPair keypair
 const hash160 = bitcoin.crypto.hash160(Buffer.from(account.publicKey));
@@ -25,7 +25,7 @@ const emailAccount = await getEmailAccount(email, password);
 ```
 
 `getAccount`/`getEmailAccount` return an `ecpair` `ECPairInterface` (the same secp256k1 key
-type as `arc76-bitcoin` — only the address format differs). Use `cashaddrjs`'s `encode(...)`
+type as `@arc76/bitcoin` — only the address format differs). Use `cashaddrjs`'s `encode(...)`
 over the hash160 of the public key for the **CashAddr** address (`bitcoincash:q...`), the
 standard Bitcoin Cash address format since the network-wide 2018 CashAddr migration — not
 Bitcoin's Base58Check or bech32. `.toWIF()` gives the private key in the same WIF format

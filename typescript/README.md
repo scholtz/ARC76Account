@@ -18,12 +18,12 @@ npm independently.
 
 | Chain              | Package               | Underlying key library      |
 |--------------------|-------------------------|-------------------------------|
-| Algorand (AVM)     | [`arc76-algorand`](packages/algorand/README.md)     | `algosdk`               |
-| Ethereum / EVM     | [`arc76-ethereum`](packages/ethereum/README.md)     | `ethers` v6              |
-| Bitcoin            | [`arc76-bitcoin`](packages/bitcoin/README.md)       | `bitcoinjs-lib` + `ecpair` |
-| Bitcoin Cash       | [`arc76-bitcoincash`](packages/bitcoincash/README.md) | `bitcoinjs-lib` + `ecpair` + `cashaddrjs` |
-| Solana             | [`arc76-solana`](packages/solana/README.md)         | `tweetnacl` + `bs58` |
-| —                  | [`arc76-core`](packages/core/README.md) (shared seed derivation, not usually installed directly) | — |
+| Algorand (AVM)     | [`@arc76/algorand`](packages/algorand/README.md)     | `algosdk`               |
+| Ethereum / EVM     | [`@arc76/ethereum`](packages/ethereum/README.md)     | `ethers` v6              |
+| Bitcoin            | [`@arc76/bitcoin`](packages/bitcoin/README.md)       | `bitcoinjs-lib` + `ecpair` |
+| Bitcoin Cash       | [`@arc76/bitcoincash`](packages/bitcoincash/README.md) | `bitcoinjs-lib` + `ecpair` + `cashaddrjs` |
+| Solana             | [`@arc76/solana`](packages/solana/README.md)         | `tweetnacl` + `bs58` |
+| —                  | [`@arc76/core`](packages/core/README.md) (shared seed derivation, not usually installed directly) | — |
 
 Every chain package exposes the same shape:
 
@@ -39,14 +39,14 @@ address/private key out of it (it varies by underlying library, same as in `dotn
 ## Install
 
 ```
-npm i arc76-algorand --save     # Algorand (AVM)
-npm i arc76-ethereum --save     # Ethereum / EVM-compatible chains
-npm i arc76-bitcoin --save      # Bitcoin
-npm i arc76-bitcoincash --save  # Bitcoin Cash
-npm i arc76-solana --save       # Solana
+npm i @arc76/algorand --save     # Algorand (AVM)
+npm i @arc76/ethereum --save     # Ethereum / EVM-compatible chains
+npm i @arc76/bitcoin --save      # Bitcoin
+npm i @arc76/bitcoincash --save  # Bitcoin Cash
+npm i @arc76/solana --save       # Solana
 ```
 
-Install only the chain package(s) you need — `arc76-core` (the shared PBKDF2 seed derivation)
+Install only the chain package(s) you need — `@arc76/core` (the shared PBKDF2 seed derivation)
 comes in transitively.
 
 Please use a password of at least 50 characters for real accounts — the account's security is
@@ -68,12 +68,12 @@ pnpm build   # builds every package
 pnpm test    # tests every package
 ```
 
-To work on a single package: `pnpm --filter arc76-algorand test` (or `build`). Note:
-`arc76-core` must be built (`pnpm --filter arc76-core build`) before other packages can resolve
+To work on a single package: `pnpm --filter @arc76/algorand test` (or `build`). Note:
+`@arc76/core` must be built (`pnpm --filter @arc76/core build`) before other packages can resolve
 its types/dist during their own build, since workspace packages link to each other's `dist/`
 output rather than their TypeScript source.
 
-## Migration guide: `arc76` (v1.x) → `arc76-algorand`
+## Migration guide (from the old `arc76` package)
 
 This workspace replaces the single `arc76` npm package with per-chain packages, mirroring the
 `dotnet/` package split. `arc76` is not maintained going forward — no compatibility shim is
@@ -81,13 +81,13 @@ provided.
 
 ```diff
 - npm i arc76 --save
-+ npm i arc76-algorand --save
++ npm i @arc76/algorand --save
 ```
 
 ```diff
 - import arc76 from "arc76";
 - const account = await arc76.generateAlgorandAccount(password, email, slot);
-+ import { getAccount, getEmailAccount } from "arc76-algorand";
++ import { getAccount, getEmailAccount } from "@arc76/algorand";
 + const account = await getAccount(password, slot);       // no email
 + const account = await getEmailAccount(email, password, slot); // with email
 ```

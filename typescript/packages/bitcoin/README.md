@@ -1,4 +1,4 @@
-# arc76-bitcoin
+# @arc76/bitcoin
 
 <p align="center"><img src="../../../assets/arc76-logo-512.png" alt="ARC76 Account" width="140"></p>
 
@@ -8,12 +8,12 @@ account derivation for **Bitcoin**.
 ## Usage
 
 ```
-npm i arc76-bitcoin --save
+npm i @arc76/bitcoin --save
 ```
 
 ```ts
 import * as bitcoin from "bitcoinjs-lib";
-import { getAccount, getEmailAccount } from "arc76-bitcoin";
+import { getAccount, getEmailAccount } from "@arc76/bitcoin";
 
 const account = await getAccount(password); // slot 0, an ECPair keypair
 const { address } = bitcoin.payments.p2wpkh({ pubkey: Buffer.from(account.publicKey) });

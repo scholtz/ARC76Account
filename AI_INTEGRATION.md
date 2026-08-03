@@ -6,8 +6,8 @@ don't mix API shapes between them, they are different libraries with different s
 
 - **.NET** (NuGet: `ARC76Account.Algorand`, `.Ethereum`, `.Bitcoin`, `.BitcoinCash`, `.Solana`) —
   see [`dotnet/AI_INTEGRATION.md`](dotnet/AI_INTEGRATION.md). Supports five chains.
-- **TypeScript/npm** (`arc76-algorand`, `arc76-ethereum`, `arc76-bitcoin`,
-  `arc76-bitcoincash`, `arc76-solana`) — see
+- **TypeScript/npm** (`@arc76/algorand`, `@arc76/ethereum`, `@arc76/bitcoin`,
+  `@arc76/bitcoincash`, `@arc76/solana`) — see
   [`typescript/AI_INTEGRATION.md`](typescript/AI_INTEGRATION.md).
 - **Python** — not published yet; there is nothing to integrate against.
 

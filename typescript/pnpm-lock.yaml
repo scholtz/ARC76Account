@@ -29,16 +29,16 @@ importers:
 
   packages/algorand:
     dependencies:
+      '@arc76/core':
+        specifier: workspace:^
+        version: link:../core
       algosdk:
         specifier: ^3.6.0
         version: 3.6.0
-      arc76-core:
-        specifier: workspace:^
-        version: link:../core
 
   packages/bitcoin:
     dependencies:
-      arc76-core:
+      '@arc76/core':
         specifier: workspace:^
         version: link:../core
       bitcoinjs-lib:
@@ -53,7 +53,7 @@ importers:
 
   packages/bitcoincash:
     dependencies:
-      arc76-core:
+      '@arc76/core':
         specifier: workspace:^
         version: link:../core
       bitcoinjs-lib:
@@ -77,7 +77,7 @@ importers:
 
   packages/ethereum:
     dependencies:
-      arc76-core:
+      '@arc76/core':
         specifier: workspace:^
         version: link:../core
       buffer:
@@ -89,7 +89,7 @@ importers:
 
   packages/solana:
     dependencies:
-      arc76-core:
+      '@arc76/core':
         specifier: workspace:^
         version: link:../core
       bs58:

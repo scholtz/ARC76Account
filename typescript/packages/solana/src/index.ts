@@ -1,5 +1,5 @@
 import nacl from "tweetnacl";
-import { deriveSeed, deriveSeedWithEmail } from "arc76-core";
+import { deriveSeed, deriveSeedWithEmail } from "@arc76/core";
 
 export interface SolanaAccount {
   /** 32-byte Ed25519 public key - base58-encode this for the Solana address. */

@@ -1,4 +1,4 @@
-# arc76-ethereum
+# @arc76/ethereum
 
 <p align="center"><img src="../../../assets/arc76-logo-512.png" alt="ARC76 Account" width="140"></p>
 
@@ -8,11 +8,11 @@ account derivation for **Ethereum and other EVM-compatible chains**.
 ## Usage
 
 ```
-npm i arc76-ethereum --save
+npm i @arc76/ethereum --save
 ```
 
 ```ts
-import { getAccount, getEmailAccount } from "arc76-ethereum";
+import { getAccount, getEmailAccount } from "@arc76/ethereum";
 
 const account = await getAccount(password); // slot 0, ethers.Wallet
 console.log(account.address, account.privateKey);

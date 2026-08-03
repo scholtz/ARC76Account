@@ -1,9 +1,10 @@
 {
-  "name": "arc76-solana",
+  "name": "@arc76/solana",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "commonjs",
+  "publishConfig": { "access": "public" },
   "license": "MIT",
   "author": "Ludovit Scholtz",
   "description": "Deterministic ARC76 account derivation for Solana. https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md",
@@ -18,7 +19,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "arc76-core": "workspace:^",
+    "@arc76/core": "workspace:^",
     "tweetnacl": "^1.0.3",
     "bs58": "^6.0.0"
   },

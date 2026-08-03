@@ -12,20 +12,20 @@ A [pnpm](https://pnpm.io) workspace implementing the
 [ARC76 account standard](https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md),
 architected as **one npm package per chain plus a shared core package** — a direct mirror of
 `dotnet/`'s `ARC76Account.Core` + one-NuGet-package-per-chain structure. Installing
-`arc76-bitcoin` must not drag in `algosdk`, `ethers`, or `cashaddrjs`. Don't reintroduce a
+`@arc76/bitcoin` must not drag in `algosdk`, `ethers`, or `cashaddrjs`. Don't reintroduce a
 single merged package.
 
-- **`packages/core`** (`arc76-core`) — shared PBKDF2 seed derivation (`deriveSeed`,
+- **`packages/core`** (`@arc76/core`) — shared PBKDF2 seed derivation (`deriveSeed`,
   `deriveSeedWithEmail`), no chain SDK dependencies. Mirrors
   `dotnet/ARC76Account.Core/Arc76Seed.cs`.
-- **`packages/algorand`** (`arc76-algorand`) — `getAccount`/`getEmailAccount` →
+- **`packages/algorand`** (`@arc76/algorand`) — `getAccount`/`getEmailAccount` →
   `algosdk.Account`, via `algosdk`.
-- **`packages/ethereum`** (`arc76-ethereum`) — → `ethers.Wallet` (`ethers` v6).
-- **`packages/bitcoin`** (`arc76-bitcoin`) — → an `ecpair` keypair, via `bitcoinjs-lib` +
+- **`packages/ethereum`** (`@arc76/ethereum`) — → `ethers.Wallet` (`ethers` v6).
+- **`packages/bitcoin`** (`@arc76/bitcoin`) — → an `ecpair` keypair, via `bitcoinjs-lib` +
   `ecpair` + `tiny-secp256k1`.
-- **`packages/bitcoincash`** (`arc76-bitcoincash`) — → an `ecpair` keypair (same key type as
+- **`packages/bitcoincash`** (`@arc76/bitcoincash`) — → an `ecpair` keypair (same key type as
   Bitcoin), via the same libs plus `cashaddrjs` for CashAddr encoding.
-- **`packages/solana`** (`arc76-solana`) — → `{ publicKey, secretKey }` (Ed25519 keypair), via
+- **`packages/solana`** (`@arc76/solana`) — → `{ publicKey, secretKey }` (Ed25519 keypair), via
   `tweetnacl` + `bs58`. Deliberately does **not** depend on `@solana/web3.js` — see "Known
   issues" below.
 
@@ -41,7 +41,7 @@ typescript/
   tsconfig.base.json        shared compiler options - extended by each package's own tsconfig.json
   jest.preset.js            shared Jest config - spread into each package's own jest.config.js
   packages/<chain>/
-    package.json            per-package name/version/deps; "arc76-core": "workspace:*" for chain packages
+    package.json            per-package name/version/deps; "@arc76/core": "workspace:*" for chain packages
     tsconfig.json           extends ../../tsconfig.base.json; sets rootDir/outDir locally (path-like
                              options must live in the leaf config - see "Known issues")
     jest.config.js           module.exports = { ...require("../../jest.preset") }
@@ -58,17 +58,17 @@ pnpm build   # pnpm -r run build
 pnpm test    # pnpm -r run test
 ```
 
-Per-package: `pnpm --filter arc76-<chain> build` / `test`. **Build `arc76-core` first** after a
+Per-package: `pnpm --filter @arc76/<chain> build` / `test`. **Build `@arc76/core` first** after a
 fresh clone or a change to it — the other packages resolve it via its `dist/` output (declared
 `main`/`types`), not its TypeScript source, since that's how npm packages normally resolve each
-other; if `arc76-core`'s `dist/` is missing or stale, dependent packages' typecheck/build will
+other; if `@arc76/core`'s `dist/` is missing or stale, dependent packages' typecheck/build will
 fail or use outdated types.
 
 ## Coding conventions
 
-- Every chain package's `getAccount`/`getEmailAccount` must call `arc76-core`'s
+- Every chain package's `getAccount`/`getEmailAccount` must call `@arc76/core`'s
   `deriveSeed`/`deriveSeedWithEmail` — never re-implement the PBKDF2 call. Never add a
-  `require`/`import` on another chain's key library (e.g. `algosdk` inside `arc76-bitcoin`).
+  `require`/`import` on another chain's key library (e.g. `algosdk` inside `@arc76/bitcoin`).
 - The PBKDF2 salt/input string format must stay byte-for-byte identical to
   `dotnet/ARC76Account.Core/Arc76Seed.cs` — **this is the one invariant shared across the whole
   monorepo, in every language.** Verify any change against the known-answer test values in
@@ -76,13 +76,13 @@ fail or use outdated types.
 - Known-answer tests reuse the exact literal values from `dotnet/TestARC76/*.cs` — this proves
   cross-language compatibility, not just internal correctness. When adding a chain here that
   already exists in `dotnet/`, copy its known-answer values rather than deriving new ones.
-- Password minimum length (16 chars, enforced in `arc76-core`) is a hard floor in code; the
+- Password minimum length (16 chars, enforced in `@arc76/core`) is a hard floor in code; the
   README-level guidance (≥ 50 chars) is stronger and aspirational — don't conflate the two or
   lower either without discussion.
 
 ## Known issues / gotchas
 
-- **`tiny-secp256k1` and `ecpair` (used by `arc76-bitcoin`/`arc76-bitcoincash`) are dual
+- **`tiny-secp256k1` and `ecpair` (used by `@arc76/bitcoin`/`@arc76/bitcoincash`) are dual
   CJS/ESM packages that TypeScript's `module`/`moduleResolution: "node16"` incorrectly flags**
   when statically `import`-ed (both as values and as types — TS1479/TS1541/TS1542), even
   though both packages have a working `require` conditional export. The fix used here is to
@@ -96,7 +96,7 @@ fail or use outdated types.
   writing — its `rpc-websockets` dependency requires `uuid` v14, which is ESM-only, and
   `rpc-websockets`' compiled `.cjs` does a bare `require("uuid")` at load time. This is a real
   upstream incompatibility (reproduces in plain Node, not just Jest), which is why
-  `arc76-solana` uses `tweetnacl` + `bs58` directly instead — we only need
+  `@arc76/solana` uses `tweetnacl` + `bs58` directly instead — we only need
   `Keypair`-equivalent functionality (no RPC), so the full SDK isn't worth the broken
   dependency. If `@solana/web3.js` fixes this upstream and a consumer specifically needs a
   `web3.Keypair` instance, document the wrap-it-yourself pattern in the README rather than
@@ -112,14 +112,14 @@ fail or use outdated types.
 Follow the same shape as the existing packages:
 1. `mkdir -p packages/<chain>/src`, copy `package.json`/`tsconfig.json`/`jest.config.js` from an
    existing package (e.g. `packages/ethereum`) and adjust name/description/dependencies.
-2. Add `"arc76-core": "workspace:*"` plus whatever key library the chain needs.
-3. Write `src/index.ts` with `getAccount`/`getEmailAccount` calling `arc76-core`'s
+2. Add `"@arc76/core": "workspace:*"` plus whatever key library the chain needs.
+3. Write `src/index.ts` with `getAccount`/`getEmailAccount` calling `@arc76/core`'s
    `deriveSeed`/`deriveSeedWithEmail`.
 4. Write `src/index.test.ts`. **If this chain already has a `dotnet/ARC76Account.<Chain>`
    package, reuse its exact known-answer values from `dotnet/TestARC76/<Chain>Tests.cs`** — a
    mismatch means something broke cross-language compatibility, not that the TS test values are
    "different but also correct."
-5. `pnpm install` (links the new workspace package), then `pnpm --filter arc76-<chain> build`
+5. `pnpm install` (links the new workspace package), then `pnpm --filter @arc76/<chain> build`
    and `test`.
 6. Update this file's package list, `README.md` (table + install list + migration guide if
    relevant), and `AI_INTEGRATION.md`.
@@ -157,11 +157,11 @@ values always sort higher regardless of the fixed-width date suffix.
 hand-edit a package's committed version to look like the computed scheme — it'll just be
 overwritten at publish time anyway, and a stray real-looking version in git is confusing.
 
-Because every chain package's `package.json` declares `"arc76-core": "workspace:^"` (not
+Because every chain package's `package.json` declares `"@arc76/core": "workspace:^"` (not
 `"workspace:*"`) — `pnpm pack`/`pnpm publish` rewrite that to a **caret range** like `^1.0.0`
 in the published tarball, not a pin to one exact version. This is deliberate: each of the 6
 packages is published from its own isolated CI matrix job (see `.github/workflows/publish-npm.yml`),
-so a dependent package's job has no way to know the exact ephemeral version `arc76-core`'s
+so a dependent package's job has no way to know the exact ephemeral version `@arc76/core`'s
 *own* job happened to publish in the same run. A caret range against core's committed
 placeholder major.minor (`^1.0.0`) matches every real published core version we ever produce
 (they're all `1.0.{huge number}`, and `^1.0.0` means `>=1.0.0 <2.0.0`) — so this works
@@ -174,6 +174,8 @@ Publishing is fully automated by `.github/workflows/publish-npm.yml` (repo root,
 `typescript/`): it triggers on `typescript/**` changes, and for each of the 6 packages
 independently, diffs that package's own `typescript/packages/<name>/` folder against the
 previous commit — only packages whose own files actually changed get built, tested, and
-published. A change to `arc76-core` does **not** cause `arc76-algorand` etc. to be
+published. A change to `@arc76/core` does **not** cause `@arc76/algorand` etc. to be
 republished (see "Versioning" above for why that's safe) — bump/touch a dependent's own files
-if it needs to be republished. See the root `AGENTS.md`'s "CI/CD" section.
+if it needs to be republished. Publishing uses a classic npm Automation token (`NPM_TOKEN`
+secret), not OIDC Trusted Publishing — see `docs/github-secrets-setup.md` for why and how to
+set it up (and how to migrate to OIDC later). See the root `AGENTS.md`'s "CI/CD" section.

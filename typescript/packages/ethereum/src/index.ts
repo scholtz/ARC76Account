@@ -1,6 +1,6 @@
 import { Buffer } from "buffer";
 import { Wallet } from "ethers";
-import { deriveSeed, deriveSeedWithEmail } from "arc76-core";
+import { deriveSeed, deriveSeedWithEmail } from "@arc76/core";
 
 function toHex(seed: Uint8Array): string {
   return "0x" + Buffer.from(seed).toString("hex");

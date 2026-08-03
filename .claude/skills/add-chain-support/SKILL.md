@@ -20,7 +20,7 @@ chain's SDK dependency to an unrelated project.
 
 If instead asked to add chain support to the TypeScript packages (`typescript/`), this skill
 doesn't directly apply — that's a pnpm workspace with its own per-chain package structure
-(`arc76-core` + one npm package per chain); see `typescript/AGENTS.md`'s own "Adding support
+(`@arc76/core` + one npm package per chain); see `typescript/AGENTS.md`'s own "Adding support
 for a new chain" section for the equivalent process there.
 
 ## Steps

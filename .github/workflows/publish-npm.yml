@@ -17,14 +17,13 @@ permissions:
 
 jobs:
   publish:
-    name: Build, test, and publish (arc76-${{ matrix.package }})
+    name: Build, test, and publish (@arc76/${{ matrix.package }})
     runs-on: ubuntu-latest
     # Optional: lets you require manual approval / scope secrets to this environment in repo
-    # settings. If you don't want that, delete this line - and if your npmjs.com Trusted
-    # Publisher config has an Environment set, it must match (or be blank if removed here).
+    # settings. If you use it, add NPM_TOKEN as an *environment* secret on "release" rather
+    # than (or in addition to) a repo secret. Remove this line if you don't want the gate.
     environment: release
     permissions:
-      id-token: write # required to obtain the GitHub OIDC token for npm Trusted Publishing
       contents: read
     strategy:
       fail-fast: false
@@ -36,8 +35,8 @@ jobs:
         with:
           fetch-depth: 0 # full history, needed to diff against github.event.before
 
-      # A dependent package (e.g. arc76-bitcoin) does NOT get republished just because
-      # arc76-core changed - its already-published version keeps depending on whatever core
+      # A dependent package (e.g. @arc76/bitcoin) does NOT get republished just because
+      # @arc76/core changed - its already-published version keeps depending on whatever core
       # version range it declares. Bump/republish a dependent explicitly if it needs a newer
       # core.
       - name: Check if this package's files changed
@@ -63,34 +62,28 @@ jobs:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
 
-      # npm Trusted Publishing requires npm CLI >= 11.5.1; don't rely on whatever ships with
-      # the Node version above.
-      - name: Ensure npm is new enough for Trusted Publishing
-        if: steps.changed.outputs.changed == 'true'
-        run: npm install -g npm@latest
-
       - name: Install workspace dependencies
         if: steps.changed.outputs.changed == 'true'
         working-directory: typescript
         run: pnpm install --frozen-lockfile
 
-      # Every chain package depends on arc76-core's *built* dist/ output (workspace packages
+      # Every chain package depends on @arc76/core's *built* dist/ output (workspace packages
       # resolve each other via package.json main/types, not TS source) - build it first
       # regardless of which package this matrix job is publishing.
-      - name: Build arc76-core
+      - name: Build @arc76/core
         if: steps.changed.outputs.changed == 'true'
         working-directory: typescript
-        run: pnpm --filter arc76-core build
+        run: pnpm --filter @arc76/core build
 
-      - name: Build arc76-${{ matrix.package }}
+      - name: Build @arc76/${{ matrix.package }}
         if: steps.changed.outputs.changed == 'true'
         working-directory: typescript
-        run: pnpm --filter arc76-${{ matrix.package }} build
+        run: pnpm --filter @arc76/${{ matrix.package }} build
 
-      - name: Test arc76-${{ matrix.package }}
+      - name: Test @arc76/${{ matrix.package }}
         if: steps.changed.outputs.changed == 'true'
         working-directory: typescript
-        run: pnpm --filter arc76-${{ matrix.package }} test
+        run: pnpm --filter @arc76/${{ matrix.package }} test
 
       # Versioning (see typescript/AGENTS.md "Versioning"): semver's release core only allows
       # three dot-separated numeric segments (no 4th "date" segment like the .NET side uses),
@@ -112,21 +105,24 @@ jobs:
       - name: Set package version
         if: steps.changed.outputs.changed == 'true'
         working-directory: typescript/packages/${{ matrix.package }}
-        run: pnpm version ${{ steps.version.outputs.version }} --no-git-tag-version --allow-same-version
+        run: pnpm version ${{ steps.version.outputs.version }} --no-git-tag-version --allow-same-version --no-git-checks
 
-      # Use `pnpm pack` (not `npm pack`) so the "arc76-core": "workspace:*" dependency range
-      # gets rewritten to a real published version number in the tarball's package.json - npm
-      # doesn't understand the workspace: protocol at all.
+      # Use `pnpm pack` (not `npm pack`) so the "@arc76/core": "workspace:^" dependency range
+      # gets rewritten to a real semver range in the tarball's package.json - npm doesn't
+      # understand the workspace: protocol at all.
       - name: Pack
         if: steps.changed.outputs.changed == 'true'
         working-directory: typescript/packages/${{ matrix.package }}
         run: pnpm pack --pack-destination /tmp/arc76-pack
 
-      # Publish the tarball via the npm CLI specifically (not `pnpm publish`) for Trusted
-      # Publishing - see https://docs.npmjs.com/trusted-publishers/. Configure a Trusted
-      # Publisher on npmjs.com for each arc76-* package with:
-      #   Organization or user: scholtz | Repository: ARC76Account | Workflow filename: publish-npm.yml
+      # Classic token-based publish (not Trusted Publishing/OIDC): NPM_TOKEN must be an npm
+      # "Automation" access token with publish rights on the @arc76 org, stored as a GitHub
+      # secret. See the "GitHub secrets setup" doc (docs/github-secrets-setup.md) for how to
+      # create both. actions/setup-node's registry-url above wires NODE_AUTH_TOKEN into a
+      # generated .npmrc automatically - we don't need to write one by hand.
       - name: Publish
         if: steps.changed.outputs.changed == 'true'
         working-directory: typescript/packages/${{ matrix.package }}
-        run: npm publish /tmp/arc76-pack/*.tgz
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish /tmp/arc76-pack/*.tgz --access public

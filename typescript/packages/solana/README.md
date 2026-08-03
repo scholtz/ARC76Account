@@ -1,4 +1,4 @@
-# arc76-solana
+# @arc76/solana
 
 <p align="center"><img src="../../../assets/arc76-logo-512.png" alt="ARC76 Account" width="140"></p>
 
@@ -8,12 +8,12 @@ account derivation for **Solana**.
 ## Usage
 
 ```
-npm i arc76-solana --save
+npm i @arc76/solana --save
 ```
 
 ```ts
 import bs58 from "bs58";
-import { getAccount, getEmailAccount } from "arc76-solana";
+import { getAccount, getEmailAccount } from "@arc76/solana";
 
 const account = await getAccount(password); // slot 0
 const address = bs58.encode(account.publicKey);

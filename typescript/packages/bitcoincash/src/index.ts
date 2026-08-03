@@ -1,4 +1,4 @@
-import { deriveSeed, deriveSeedWithEmail } from "arc76-core";
+import { deriveSeed, deriveSeedWithEmail } from "@arc76/core";
 
 /**
  * Minimal shape of the `ecpair` keypair this package returns. Declared locally (rather than

@@ -1,5 +1,5 @@
 import { mnemonicFromSeed, mnemonicToSecretKey, Account } from "algosdk";
-import { deriveSeed, deriveSeedWithEmail } from "arc76-core";
+import { deriveSeed, deriveSeedWithEmail } from "@arc76/core";
 
 /**
  * Derives a deterministic Algorand account from a password.

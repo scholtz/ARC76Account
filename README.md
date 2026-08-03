@@ -12,7 +12,7 @@ and published, and has its own detailed README:
 | Language   | Folder                        | Published as                                                                 | Status      |
 |------------|--------------------------------|-------------------------------------------------------------------------------|-------------|
 | .NET       | [`dotnet/`](dotnet/README.md)         | NuGet: `ARC76Account.Algorand`, `.Ethereum`, `.Bitcoin`, `.BitcoinCash`, `.Solana`, `.Core` | Available   |
-| TypeScript | [`typescript/`](typescript/README.md) | npm: `arc76-algorand`, `arc76-ethereum`, `arc76-bitcoin`, `arc76-bitcoincash`, `arc76-solana`, `arc76-core` | Available   |
+| TypeScript | [`typescript/`](typescript/README.md) | npm: `@arc76/algorand`, `@arc76/ethereum`, `@arc76/bitcoin`, `@arc76/bitcoincash`, `@arc76/solana`, `@arc76/core` | Available   |
 | Python     | [`python/`](python/README.md)         | PyPI (planned)                                                                | Not yet implemented |
 
 ## Which folder do I want?
@@ -46,16 +46,20 @@ split between root and per-language).
 
 ## Automated publishing (CI/CD)
 
-Two GitHub Actions workflows handle releases, both using **Trusted Publishing** (OIDC — no
-long-lived API keys/tokens stored in this repo):
+Two GitHub Actions workflows handle releases:
 
 - **[`.github/workflows/publish-nuget.yml`](.github/workflows/publish-nuget.yml)** — triggers
   only on changes under `dotnet/`, then builds+tests everything but only packs+pushes the
   specific project(s) whose own folder actually changed (e.g. a Bitcoin-only change doesn't
-  republish the other five).
+  republish the other five). Publishes via NuGet **Trusted Publishing** (OIDC — no API key
+  stored anywhere).
 - **[`.github/workflows/publish-npm.yml`](.github/workflows/publish-npm.yml)** — triggers only
-  on changes under `typescript/`, and independently builds+tests+publishes **each** `arc76-*`
-  package only if that specific package's own folder changed.
+  on changes under `typescript/`, and independently builds+tests+publishes **each** `@arc76/*`
+  package only if that specific package's own folder changed. Publishes via a classic npm
+  **Automation token** (`NPM_TOKEN` secret) — npm's OIDC Trusted Publishing requires each
+  package to already exist on the registry, which isn't the case yet for six brand-new `@arc76/*`
+  packages; see [`docs/github-secrets-setup.md`](docs/github-secrets-setup.md) for how to
+  switch to it later.
 
 Changes to `audits/` (or anything outside `dotnet/`/`typescript/`) never trigger either
 workflow — so running an audit, or touching one language's code, never force-publishes an
@@ -69,12 +73,12 @@ since semver doesn't allow a 4th dotted segment — e.g. `1.0.422026080314`). `{
 the GitHub Actions run number, which only ever goes up. See `dotnet/AGENTS.md`/
 `typescript/AGENTS.md` for the full rationale.
 
-**One-time setup required** (not done by these workflows themselves):
-- On [nuget.org](https://www.nuget.org): add a Trusted Publishing policy —
-  Repository Owner `scholtz`, Repository `ARC76Account`, Workflow File `publish-nuget.yml` —
-  plus a repo/environment secret `NUGET_USER` holding your nuget.org username.
-- On [npmjs.com](https://www.npmjs.com): add a Trusted Publisher to each `arc76-*` package —
-  Organization/user `scholtz`, Repository `ARC76Account`, Workflow filename `publish-npm.yml`.
+**One-time setup required** (not done by these workflows themselves) — see
+[`docs/github-secrets-setup.md`](docs/github-secrets-setup.md) for the full walkthrough:
+- A nuget.org Trusted Publishing policy + a `NUGET_USER` GitHub secret (your nuget.org
+  username).
+- An `@arc76` npm organization + an npm Automation token stored as the `NPM_TOKEN` GitHub
+  secret.
 - Both workflows target a GitHub Actions `environment: release`; either create that
   environment in repo settings (optionally with required reviewers) or remove the
   `environment:` line from both workflow files if you don't want that gate.

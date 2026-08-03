@@ -45,7 +45,7 @@ async function pbkdf2(input: string, salt: string): Promise<Uint8Array> {
 }
 
 /**
- * Derives the 32-byte ARC76 seed from a password. Every chain-specific arc76-* package builds
+ * Derives the 32-byte ARC76 seed from a password. Every chain-specific @arc76/* package builds
  * its account/keypair from this seed.
  */
 export async function deriveSeed(password: string, slot: number = 0): Promise<Uint8Array> {

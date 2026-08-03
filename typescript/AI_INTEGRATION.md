@@ -1,7 +1,7 @@
 # AI Integration Guide (TypeScript)
 
 A concise, copy-pasteable reference for AI coding assistants (Claude, Copilot, Cursor, ChatGPT,
-etc.) generating code that consumes the `arc76-*` npm packages.
+etc.) generating code that consumes the `@arc76/*` npm packages.
 
 > This file documents the **TypeScript/npm** packages for *consumers*. For the .NET packages
 > (`ARC76Account.Algorand`, `.Ethereum`, `.Bitcoin`, `.BitcoinCash`, `.Solana`), see
@@ -14,17 +14,17 @@ There is **no single `arc76` package anymore** — that was the pre-split v1.x p
 only). Install the specific chain package(s) you need:
 
 ```
-npm i arc76-algorand --save     # Algorand (AVM)
-npm i arc76-ethereum --save     # Ethereum / EVM-compatible chains
-npm i arc76-bitcoin --save      # Bitcoin
-npm i arc76-bitcoincash --save  # Bitcoin Cash
-npm i arc76-solana --save       # Solana
+npm i @arc76/algorand --save     # Algorand (AVM)
+npm i @arc76/ethereum --save     # Ethereum / EVM-compatible chains
+npm i @arc76/bitcoin --save      # Bitcoin
+npm i @arc76/bitcoincash --save  # Bitcoin Cash
+npm i @arc76/solana --save       # Solana
 ```
 
-`arc76-core` comes in transitively — don't tell a user to install it directly unless they're
+`@arc76/core` comes in transitively — don't tell a user to install it directly unless they're
 implementing ARC76 support for a new chain themselves.
 
-**Do not** recommend installing `arc76-bitcoin` (or any other chain package) when the user only
+**Do not** recommend installing `@arc76/bitcoin` (or any other chain package) when the user only
 asked about a different chain — each package pulls in only that chain's key library
 (`algosdk`, `ethers`, `bitcoinjs-lib`/`ecpair`, `cashaddrjs`, `tweetnacl`) and nothing else.
 
@@ -58,16 +58,16 @@ for "account 2", "account 3", etc., never generate a new password per slot.
 
 | Package             | Returns                                   | Address / key accessors |
 |----------------------|---------------------------------------------|----------------------------|
-| `arc76-algorand`     | `algosdk.Account`                          | `.addr` |
-| `arc76-ethereum`     | `ethers.Wallet`                            | `.address`, `.privateKey` |
-| `arc76-bitcoin`      | `{ publicKey, toWIF() }` (ecpair-like)      | `bitcoinjs-lib`'s `payments.p2wpkh({ pubkey })` for address, `.toWIF()` for private key |
-| `arc76-bitcoincash`  | `{ publicKey, toWIF() }` (ecpair-like)      | `cashaddrjs`'s `encode(...)` over `bitcoinjs-lib`'s `crypto.hash160(publicKey)` for address, `.toWIF()` for private key |
-| `arc76-solana`       | `{ publicKey, secretKey }` (Ed25519 keypair) | `bs58.encode(publicKey)` for address, `bs58.encode(secretKey)` for private key |
+| `@arc76/algorand`     | `algosdk.Account`                          | `.addr` |
+| `@arc76/ethereum`     | `ethers.Wallet`                            | `.address`, `.privateKey` |
+| `@arc76/bitcoin`      | `{ publicKey, toWIF() }` (ecpair-like)      | `bitcoinjs-lib`'s `payments.p2wpkh({ pubkey })` for address, `.toWIF()` for private key |
+| `@arc76/bitcoincash`  | `{ publicKey, toWIF() }` (ecpair-like)      | `cashaddrjs`'s `encode(...)` over `bitcoinjs-lib`'s `crypto.hash160(publicKey)` for address, `.toWIF()` for private key |
+| `@arc76/solana`       | `{ publicKey, secretKey }` (Ed25519 keypair) | `bs58.encode(publicKey)` for address, `bs58.encode(secretKey)` for private key |
 
 ### Algorand
 
 ```ts
-import { getAccount, getEmailAccount } from "arc76-algorand";
+import { getAccount, getEmailAccount } from "@arc76/algorand";
 
 const account = await getAccount(password); // slot 0
 const emailAccount = await getEmailAccount(email, password); // slot 0
@@ -76,7 +76,7 @@ const emailAccount = await getEmailAccount(email, password); // slot 0
 ### Ethereum / EVM-compatible chains
 
 ```ts
-import { getAccount } from "arc76-ethereum";
+import { getAccount } from "@arc76/ethereum";
 
 const account = await getAccount(password);
 console.log(account.address, account.privateKey);
@@ -86,7 +86,7 @@ console.log(account.address, account.privateKey);
 
 ```ts
 import * as bitcoin from "bitcoinjs-lib";
-import { getAccount } from "arc76-bitcoin";
+import { getAccount } from "@arc76/bitcoin";
 
 const account = await getAccount(password);
 const { address } = bitcoin.payments.p2wpkh({ pubkey: Buffer.from(account.publicKey) });
@@ -101,7 +101,7 @@ not legacy P2PKH or nested-SegWit, unless the user specifically asks for one of 
 ```ts
 import * as bitcoin from "bitcoinjs-lib";
 import { encode } from "cashaddrjs";
-import { getAccount } from "arc76-bitcoincash";
+import { getAccount } from "@arc76/bitcoincash";
 
 const account = await getAccount(password);
 const hash160 = bitcoin.crypto.hash160(Buffer.from(account.publicKey));
@@ -117,7 +117,7 @@ Cash doesn't support SegWit at all).
 
 ```ts
 import bs58 from "bs58";
-import { getAccount } from "arc76-solana";
+import { getAccount } from "@arc76/solana";
 
 const account = await getAccount(password);
 const address = bs58.encode(account.publicKey);
@@ -135,18 +135,18 @@ reasons.
 ## Common mistakes to avoid when generating code
 
 - Using the old `arc76` package or its `generateAlgorandAccount(password, email, slot)` single
-  function — as of the per-chain split, use `arc76-algorand`'s `getAccount(password, slot)` /
+  function — as of the per-chain split, use `@arc76/algorand`'s `getAccount(password, slot)` /
   `getEmailAccount(email, password, slot)` instead. Note the parameter order:
   `getEmailAccount(email, password, slot)`, email first.
 - Forgetting `await` — every exported function here is `async`.
-- Assuming there is a chain-agnostic factory/shared interface across `arc76-*` packages —
+- Assuming there is a chain-agnostic factory/shared interface across `@arc76/*` packages —
   there isn't one by design, matching `dotnet/`'s architecture.
 - Treating `slot` as a chain identifier — it isn't; it only distinguishes multiple accounts
   within the same chain and password.
-- Mixing up Bitcoin and Bitcoin Cash address encoding — `arc76-bitcoin` and
-  `arc76-bitcoincash` both return the same kind of secp256k1 keypair shape, but the address
+- Mixing up Bitcoin and Bitcoin Cash address encoding — `@arc76/bitcoin` and
+  `@arc76/bitcoincash` both return the same kind of secp256k1 keypair shape, but the address
   encoding is chain-specific (SegWit/bech32 vs. CashAddr) and is not interchangeable.
-- Adding `@solana/web3.js` as a dependency just to use `arc76-solana` — it isn't needed;
-  `arc76-solana` returns a plain `{ publicKey, secretKey }` object directly.
+- Adding `@solana/web3.js` as a dependency just to use `@arc76/solana` — it isn't needed;
+  `@arc76/solana` returns a plain `{ publicKey, secretKey }` object directly.
 - Using `bs58.encode` on the wrong Solana field, or forgetting to encode at all — `publicKey`
   and `secretKey` are raw `Uint8Array`s, not ready-to-display strings.

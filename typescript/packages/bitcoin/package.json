@@ -1,9 +1,10 @@
 {
-  "name": "arc76-bitcoin",
+  "name": "@arc76/bitcoin",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "commonjs",
+  "publishConfig": { "access": "public" },
   "license": "MIT",
   "author": "Ludovit Scholtz",
   "description": "Deterministic ARC76 account derivation for Bitcoin (native SegWit / bech32 addresses). https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md",
@@ -18,7 +19,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "arc76-core": "workspace:^",
+    "@arc76/core": "workspace:^",
     "bitcoinjs-lib": "^7.0.1",
     "ecpair": "^3.0.1",
     "tiny-secp256k1": "^2.2.4"
