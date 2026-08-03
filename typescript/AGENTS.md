@@ -140,18 +140,18 @@ committed `"version"` field (currently `1.0.0` in every package) is just a place
 local dev; CI overwrites it ephemerally right before packing/publishing and never commits the
 bump back.
 
-The published version is `1.0.{increment}{yyyyMMddHH}` — e.g. run #7, published
-2026-08-03 14:00 UTC, becomes `1.0.72026080314`. **The trailing 10 digits are always the exact
+The published version is `1.{increment}.{yyyyMMddHH}` — e.g. run #3, published
+2026-08-03 18:00 UTC, becomes `1.3.2026080318`. **The patch segment is always the exact
 publish timestamp**, so you can read off when a package was last published just from its
-version string. This deviates slightly from `dotnet/`'s dotted `1.0.{increment}.{yyyyMMddHH}`
+version string. This deviates slightly from `dotnet/`'s `1.0.{increment}.{yyyyMMddHH}`
 because semver's release core only allows three dot-separated numeric segments — a 4th dotted
-segment is invalid semver and `npm publish` rejects it. Semver *build metadata*
-(`1.0.7+2026080314`) was considered and rejected: some tooling in the npm/semver ecosystem
-silently strips `+build` suffixes (verified empirically — `npm version`/`semver.clean()` do
-this), so it wouldn't reliably survive. The concatenated-patch form
-(`1.0.{increment}{date}`) is a perfectly ordinary, always-increasing semver patch with no such
-risk — verified against the `semver` package directly, including that larger `{increment}`
-values always sort higher regardless of the fixed-width date suffix.
+segment is invalid semver and `npm publish` rejects it, so `{increment}` takes the minor slot
+instead of being concatenated into the patch. Semver *build metadata* (`1.3+2026080318`) was
+considered and rejected: some tooling in the npm/semver ecosystem silently strips `+build`
+suffixes (verified empirically — `npm version`/`semver.clean()` do this), so it wouldn't
+reliably survive. The dotted `1.{increment}.{date}` form is a perfectly ordinary,
+always-increasing semver version with no such risk — `{increment}` in the minor slot always
+sorts higher regardless of the fixed-width date in the patch slot.
 
 `{increment}` is `github.run_number` (monotonically increasing, never resets) in CI. Never
 hand-edit a package's committed version to look like the computed scheme — it'll just be
@@ -163,10 +163,10 @@ in the published tarball, not a pin to one exact version. This is deliberate: ea
 packages is published from its own isolated CI matrix job (see `.github/workflows/publish-npm.yml`),
 so a dependent package's job has no way to know the exact ephemeral version `@arc76/core`'s
 *own* job happened to publish in the same run. A caret range against core's committed
-placeholder major.minor (`^1.0.0`) matches every real published core version we ever produce
-(they're all `1.0.{huge number}`, and `^1.0.0` means `>=1.0.0 <2.0.0`) — so this works
-correctly without cross-job coordination. If you ever bump the major/minor prefix away from
-`1.0`, re-verify this still holds.
+placeholder version (`^1.0.0`) matches every real published core version we ever produce
+(they're all `1.{increment}.{date}`, and `^1.0.0` means `>=1.0.0 <2.0.0`) — so this works
+correctly without cross-job coordination. If you ever bump the major prefix away from `1`,
+re-verify this still holds.
 
 ## Release process
 

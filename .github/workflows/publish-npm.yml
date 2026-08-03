@@ -94,17 +94,17 @@ jobs:
       # Versioning (see typescript/AGENTS.md "Versioning"): semver's release core only allows
       # three dot-separated numeric segments (no 4th "date" segment like the .NET side uses),
       # and semver build-metadata (+...) suffixes are unreliable - some tooling strips them, so
-      # the date wouldn't reliably survive. Instead the patch number itself is
-      # {increment}{yyyyMMddHH} concatenated (e.g. run 7 published 2026-08-03 14:00 UTC ->
-      # patch 72026080314) - still a perfectly ordinary, always-increasing semver patch, but
-      # the trailing 10 digits are always this exact, parseable timestamp.
+      # the date wouldn't reliably survive. Instead the minor segment is the run increment and
+      # the patch segment is the plain yyyyMMddHH timestamp (e.g. run 3 published 2026-08-03
+      # 18:00 UTC -> 1.3.2026080318) - still a perfectly ordinary, always-increasing semver
+      # version, but the patch digits are always this exact, parseable timestamp.
       - name: Compute version
         if: steps.changed.outputs.changed == 'true'
         id: version
         run: |
           INCREMENT="${{ github.run_number }}"
           FULL_DATE=$(date -u +%Y%m%d%H)
-          VERSION="1.0.${INCREMENT}${FULL_DATE}"
+          VERSION="1.${INCREMENT}.${FULL_DATE}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Version: $VERSION"
 
