@@ -1,7 +1,8 @@
 # GitHub Actions secrets setup
 
-This repo publishes NuGet packages via [`.github/workflows/publish-nuget.yml`](../.github/workflows/publish-nuget.yml)
-and npm packages via [`.github/workflows/publish-npm.yml`](../.github/workflows/publish-npm.yml).
+This repo publishes NuGet packages via [`.github/workflows/publish-nuget.yml`](../.github/workflows/publish-nuget.yml),
+npm packages via [`.github/workflows/publish-npm.yml`](../.github/workflows/publish-npm.yml),
+and PyPI packages via [`.github/workflows/publish-pypi.yml`](../.github/workflows/publish-pypi.yml).
 Each uses a different authentication method, and each needs a one-time setup outside this repo
 before it will actually publish anything. This doc is the complete checklist.
 
@@ -11,10 +12,12 @@ before it will actually publish anything. This doc is the complete checklist.
 |---------------|-----------------------|------------------------------------------|----------------------|
 | `NUGET_USER`  | `publish-nuget.yml`  | Your nuget.org **username** (not email)  | GitHub repo/environment secret |
 | `NPM_TOKEN`   | `publish-npm.yml`    | An npm **Automation** access token       | GitHub repo/environment secret |
+| *(none)*      | `publish-pypi.yml`   | PyPI Trusted Publishing needs no secret — just a policy configured on pypi.org (see [§3](#3-pypi-trusted-publishing-oidc-no-api-key-stored)) | — |
 
-Neither workflow needs any *other* secret — no NuGet API key is stored anywhere (NuGet
-publishing uses Trusted Publishing/OIDC, which only needs your username to identify which
-policy to match), and no long-lived GitHub token is needed either.
+`publish-nuget.yml` and `publish-pypi.yml` need no *stored* secret at all — both use Trusted
+Publishing/OIDC, which only needs a policy configured on the package registry's own site (plus,
+for NuGet, a username to identify which policy to match). `publish-npm.yml` is the one exception,
+using a classic token (see [§2](#2-npm-classic-token-based-publishing) for why).
 
 ## 1. NuGet: Trusted Publishing (OIDC, no API key stored)
 
@@ -51,7 +54,7 @@ exist on the registry before you can configure a trusted publisher for it, and (
 packages) org-level setup that can be fiddly to get right the first time. Since `publish-npm.yml`
 needs to work for six **brand-new** `@arc76/*` packages that have never been published before,
 it uses a classic **npm access token** instead — simpler to set up today, and you can switch to
-Trusted Publishing later once every package exists (see [§4](#4-optional-later-switching-npm-to-trusted-publishing)).
+Trusted Publishing later once every package exists (see [§5](#5-optional-later-switching-npm-to-trusted-publishing)).
 
 ### 2a. Create (or confirm) the `@arc76` npm organization
 
@@ -82,7 +85,7 @@ never provide).
 3. Set an expiration you're comfortable with (granular tokens support this; rotate the
    `NPM_TOKEN` GitHub secret when it expires).
 4. Copy the token value immediately — npm only shows it once.
-5. Add it as the `NPM_TOKEN` secret (see [§3](#3-adding-the-secrets-in-github) below).
+5. Add it as the `NPM_TOKEN` secret (see [§4](#4-adding-the-secrets-in-github) below).
 
 ### 2c. Why `--access public` is also in the workflow
 
@@ -92,12 +95,39 @@ Every package here sets `"publishConfig": { "access": "public" }` in its own `pa
 so a package never accidentally tries to publish as private and fail (or silently require a
 paid plan) if one of the two is ever removed.
 
-## 3. Adding the secrets in GitHub
+## 3. PyPI: Trusted Publishing (OIDC, no API key stored)
 
-Both `NUGET_USER` and `NPM_TOKEN` are added the same way. You can add them as **repository**
-secrets (simpler) or **environment** secrets scoped to the `release` environment (more secure —
-recommended if you keep the `environment: release` line in both workflows, since environment
-secrets are only readable by workflow runs targeting that environment).
+PyPI's [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) works like NuGet's — the
+workflow exchanges a short-lived GitHub-issued OIDC token for a temporary PyPI upload token at
+publish time. Unlike npm at the time `publish-npm.yml` was written, PyPI supports registering a
+**pending** trusted publisher for a project that doesn't exist yet, so all six `arc76-*`
+packages can use OIDC from their very first publish — no interim token-based step needed.
+
+1. Sign in at [pypi.org](https://pypi.org).
+2. For each of the six packages (`arc76-core`, `arc76-algorand`, `arc76-ethereum`,
+   `arc76-bitcoin`, `arc76-bitcoincash`, `arc76-solana`): go to
+   [pypi.org/manage/account/publishing/](https://pypi.org/manage/account/publishing/) → **Add a
+   pending publisher**, with:
+   - **PyPI Project Name**: the package name, e.g. `arc76-core`
+   - **Owner**: `scholtz`
+   - **Repository name**: `ARC76Account`
+   - **Workflow name**: `publish-pypi.yml` (just the filename, not the `.github/workflows/`
+     path)
+   - **Environment name** (optional): `release` — only fill this in if you keep the
+     `environment: release` line in `publish-pypi.yml`; leave blank if you removed it.
+3. The first successful publish for each project converts its pending publisher into a regular
+   one automatically — no separate activation step, unlike NuGet's 7-day pending window.
+
+That's it — no PyPI API token is generated or stored anywhere for this to work.
+
+## 4. Adding the secrets in GitHub
+
+Both `NUGET_USER` and `NPM_TOKEN` are added the same way — `publish-pypi.yml` needs no secret
+at all (see [§3](#3-pypi-trusted-publishing-oidc-no-api-key-stored)). You can add the two
+secrets as **repository** secrets (simpler) or **environment** secrets scoped to the `release`
+environment (more secure — recommended if you keep the `environment: release` line in all three
+workflows, since environment secrets are only readable by workflow runs targeting that
+environment).
 
 **Repository secrets:**
 1. Go to the repo on GitHub → **Settings → Secrets and variables → Actions → Secrets** tab.
@@ -110,15 +140,15 @@ secrets are only readable by workflow runs targeting that environment).
 2. Inside that environment's page, under **Environment secrets**, add `NUGET_USER` and
    `NPM_TOKEN` the same way as above.
 3. If you don't want the approval gate or the extra environment-scoping, delete the
-   `environment: release` line from both `publish-nuget.yml` and `publish-npm.yml`, and just
-   use repository secrets instead.
+   `environment: release` line from `publish-nuget.yml`, `publish-npm.yml`, and
+   `publish-pypi.yml`, and just use repository secrets instead.
 
-Either way, once both secrets exist and the nuget.org Trusted Publishing policy is set up, the
-next push to `master` touching `dotnet/**` or `typescript/**` will publish automatically —
-see the root [`README.md`](../README.md)'s "Automated publishing" section for exactly which
-packages get published when.
+Either way, once both secrets exist and the nuget.org/pypi.org Trusted Publishing setups are
+done, the next push to `master` touching `dotnet/**`, `typescript/**`, or `python/**` will
+publish automatically — see the root [`README.md`](../README.md)'s "Automated publishing"
+section for exactly which packages get published when.
 
-## 4. (Optional, later) Switching npm to Trusted Publishing
+## 5. (Optional, later) Switching npm to Trusted Publishing
 
 Once every `@arc76/*` package has been published at least once via the token method above, you
 can switch to OIDC Trusted Publishing the same way NuGet does it, and stop needing `NPM_TOKEN`

@@ -9,13 +9,14 @@ don't mix API shapes between them, they are different libraries with different s
 - **TypeScript/npm** (`@arc76/algorand`, `@arc76/ethereum`, `@arc76/bitcoin`,
   `@arc76/bitcoincash`, `@arc76/solana`) — see
   [`typescript/AI_INTEGRATION.md`](typescript/AI_INTEGRATION.md).
-- **Python** — not published yet; there is nothing to integrate against.
+- **Python/PyPI** (`arc76-algorand`, `arc76-ethereum`, `arc76-bitcoin`, `arc76-bitcoincash`,
+  `arc76-solana`) — see [`python/AI_INTEGRATION.md`](python/AI_INTEGRATION.md).
 
 ## The one thing true across all of them
 
 All implementations derive account key material the same way for the same inputs
 (PBKDF2-HMAC-SHA256, 999,999 iterations, ARC76's salt/input string format) — so the same
-password/email/slot produces the same underlying key material whether you use the .NET or
-TypeScript package. This does **not** mean the two packages have the same API, the same chain
-coverage, or the same parameter order/validation — check the language-specific guide above
-before writing code.
+password/email/slot produces the same underlying key material whether you use the .NET,
+TypeScript, or Python package. This does **not** mean the packages have the same API, the same
+chain coverage, or the same parameter order/validation/sync-vs-async behavior — check the
+language-specific guide above before writing code.

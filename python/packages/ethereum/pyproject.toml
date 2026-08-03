@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "arc76-ethereum"
+version = "1.0.0"
+description = "Deterministic ARC76 account derivation for Ethereum and other EVM-compatible chains. https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Ludovit Scholtz" }]
+requires-python = ">=3.9"
+keywords = ["arc76", "Ethereum", "EVM", "cryptography", "account generation"]
+classifiers = [
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security :: Cryptography",
+  "Typing :: Typed",
+]
+dependencies = [
+  "arc76-core>=1.0.0",
+  "eth-account>=0.13.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/scholtz/ARC76Account"
+Repository = "https://github.com/scholtz/ARC76Account"
+Issues = "https://github.com/scholtz/ARC76Account/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/arc76"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

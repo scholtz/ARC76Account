@@ -13,7 +13,7 @@ and published, and has its own detailed README:
 |------------|--------------------------------|-------------------------------------------------------------------------------|-------------|
 | .NET       | [`dotnet/`](dotnet/README.md)         | NuGet: `ARC76Account.Algorand`, `.Ethereum`, `.Bitcoin`, `.BitcoinCash`, `.Solana`, `.Core` | Available   |
 | TypeScript | [`typescript/`](typescript/README.md) | npm: `@arc76/algorand`, `@arc76/ethereum`, `@arc76/bitcoin`, `@arc76/bitcoincash`, `@arc76/solana`, `@arc76/core` | Available   |
-| Python     | [`python/`](python/README.md)         | PyPI (planned)                                                                | Not yet implemented |
+| Python     | [`python/`](python/README.md)         | PyPI: `arc76-algorand`, `arc76-ethereum`, `arc76-bitcoin`, `arc76-bitcoincash`, `arc76-solana`, `arc76-core` | Available   |
 
 ## Which folder do I want?
 
@@ -22,7 +22,9 @@ and published, and has its own detailed README:
 - Building a JS/TS app (browser or Node)? → [`typescript/README.md`](typescript/README.md) —
   supports Algorand, Ethereum/EVM, Bitcoin, Bitcoin Cash, and Solana, one npm package per chain,
   managed as a pnpm workspace.
-- Python isn't available yet — see [`python/README.md`](python/README.md).
+- Building a Python app? → [`python/README.md`](python/README.md) — supports Algorand,
+  Ethereum/EVM, Bitcoin, Bitcoin Cash, and Solana, one PyPI package per chain, all under the
+  shared `arc76.*` namespace package.
 
 ## Packages
 
@@ -56,9 +58,18 @@ Each has its own README, linked below.
 | [`@arc76/bitcoincash`](https://www.npmjs.com/package/@arc76/bitcoincash) ([README](typescript/packages/bitcoincash/README.md)) | Bitcoin Cash | `bitcoinjs-lib` + `ecpair` + `cashaddrjs` |
 | [`@arc76/solana`](https://www.npmjs.com/package/@arc76/solana) ([README](typescript/packages/solana/README.md)) | Solana | `tweetnacl` + `bs58` |
 
-### Python
+### Python (PyPI)
 
-Not implemented yet — see [`python/README.md`](python/README.md).
+Each has its own README, linked below.
+
+| Package                                                              | Chain              | What it depends on               |
+|--------------------------------------------------------------------------|--------------------|-------------------------------------|
+| [`arc76-core`](https://pypi.org/project/arc76-core/) ([README](python/packages/core/README.md)) | — (shared seed derivation, not usually installed directly) | Python standard library only |
+| [`arc76-algorand`](https://pypi.org/project/arc76-algorand/) ([README](python/packages/algorand/README.md)) | Algorand (AVM) | `py-algorand-sdk` + `pynacl` |
+| [`arc76-ethereum`](https://pypi.org/project/arc76-ethereum/) ([README](python/packages/ethereum/README.md)) | Ethereum / EVM | `eth-account` |
+| [`arc76-bitcoin`](https://pypi.org/project/arc76-bitcoin/) ([README](python/packages/bitcoin/README.md)) | Bitcoin | `coincurve` (libsecp256k1) + `bech32` + `pycryptodome` |
+| [`arc76-bitcoincash`](https://pypi.org/project/arc76-bitcoincash/) ([README](python/packages/bitcoincash/README.md)) | Bitcoin Cash | `coincurve` (libsecp256k1) + internal CashAddr encoder + `pycryptodome` |
+| [`arc76-solana`](https://pypi.org/project/arc76-solana/) ([README](python/packages/solana/README.md)) | Solana | `pynacl` (libsodium) |
 
 ## Shared ARC76 semantics
 
@@ -84,7 +95,7 @@ least 50 characters — the account's security is entirely the password's securi
 ```
 dotnet/       .NET libraries (NuGet) - see dotnet/AGENTS.md for contributor instructions
 typescript/   TypeScript/JS library (npm) - see typescript/AGENTS.md
-python/       Reserved for a future PyPI package
+python/       Python library (PyPI) - see python/AGENTS.md
 ```
 
 Shared, repo-root files: `LICENSE.txt` (applies to the whole repo), this `README.md`, and
@@ -93,7 +104,7 @@ split between root and per-language).
 
 ## Automated publishing (CI/CD)
 
-Two GitHub Actions workflows handle releases:
+Three GitHub Actions workflows handle releases:
 
 - **[`.github/workflows/publish-nuget.yml`](.github/workflows/publish-nuget.yml)** — triggers
   only on changes under `dotnet/`, then builds+tests everything but only packs+pushes the
@@ -107,18 +118,25 @@ Two GitHub Actions workflows handle releases:
   package to already exist on the registry, which isn't the case yet for six brand-new `@arc76/*`
   packages; see [`docs/github-secrets-setup.md`](docs/github-secrets-setup.md) for how to
   switch to it later.
+- **[`.github/workflows/publish-pypi.yml`](.github/workflows/publish-pypi.yml)** — triggers
+  only on changes under `python/`, and independently builds+tests+publishes **each** `arc76-*`
+  package only if that specific package's own folder changed. Publishes via PyPI **Trusted
+  Publishing** (OIDC — no stored API token; PyPI supports registering a "pending" trusted
+  publisher for a project before it's ever been published, unlike npm at the time
+  `publish-npm.yml` was written).
 
-Changes to `audits/` (or anything outside `dotnet/`/`typescript/`) never trigger either
-workflow — so running an audit, or touching one language's code, never force-publishes an
-unrelated or unchanged package.
+Changes to `audits/` (or anything outside `dotnet/`/`typescript/`/`python/`) never trigger any
+of these workflows — so running an audit, or touching one language's code, never force-publishes
+an unrelated or unchanged package.
 
 **Versioning**: every published version encodes exactly when it was published, so you never
 need to look anywhere else to find out. .NET packages use `1.0.{increment}.{yyyyMMddHH}` (e.g.
-`1.0.42.2026080314` — run #42, 2026-08-03 14:00 UTC); npm packages use the closest
-semver-legal equivalent, `1.0.{increment}{yyyyMMddHH}` (concatenated into the patch number,
-since semver doesn't allow a 4th dotted segment — e.g. `1.0.422026080314`). `{increment}` is
-the GitHub Actions run number, which only ever goes up. See `dotnet/AGENTS.md`/
-`typescript/AGENTS.md` for the full rationale.
+`1.0.42.2026080314` — run #42, 2026-08-03 14:00 UTC); npm and PyPI packages use the closest
+semver/PEP-440-legal equivalent, `1.{increment}.{yyyyMMddHH}` (`{increment}` in the minor slot,
+the plain publish timestamp in the patch slot, since neither format allows a 4th dotted release
+segment — e.g. `1.42.2026080314`). `{increment}` is the GitHub Actions run number, which only
+ever goes up. See `dotnet/AGENTS.md`/`typescript/AGENTS.md`/`python/AGENTS.md` for the full
+rationale.
 
 **One-time setup required** (not done by these workflows themselves) — see
 [`docs/github-secrets-setup.md`](docs/github-secrets-setup.md) for the full walkthrough:
@@ -126,9 +144,11 @@ the GitHub Actions run number, which only ever goes up. See `dotnet/AGENTS.md`/
   username).
 - An `@arc76` npm organization + an npm Automation token stored as the `NPM_TOKEN` GitHub
   secret.
-- Both workflows target a GitHub Actions `environment: release`; either create that
+- A pypi.org Trusted Publishing policy for each of the six `arc76-*` projects (can be created
+  as "pending" publishers before the projects exist).
+- All three workflows target a GitHub Actions `environment: release`; either create that
   environment in repo settings (optionally with required reviewers) or remove the
-  `environment:` line from both workflow files if you don't want that gate.
+  `environment:` line from the workflow files if you don't want that gate.
 
 ## AI-assisted development
 

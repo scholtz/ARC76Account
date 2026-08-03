@@ -15,8 +15,9 @@ top-level folder, independently versioned and published:
 - **`typescript/`** — TypeScript/JS, a pnpm workspace publishing one npm package per chain
   (`@arc76/core` + `@arc76/algorand`, `.ethereum`, `.bitcoin`, `.bitcoincash`, `.solana`),
   mirroring `dotnet/`'s architecture. See [`typescript/AGENTS.md`](typescript/AGENTS.md).
-- **`python/`** — reserved for a future PyPI package. Not implemented yet — no AGENTS.md there
-  until there's something to document.
+- **`python/`** — Python, one PyPI package per chain (`arc76-core` + `arc76-algorand`,
+  `.ethereum`, `.bitcoin`, `.bitcoincash`, `.solana`, all under the shared `arc76.*` namespace
+  package), mirroring `dotnet/`'s architecture. See [`python/AGENTS.md`](python/AGENTS.md).
 
 **When working on a specific language, read that folder's own `AGENTS.md` first** — it has the
 actual build/test commands, coding conventions, and architecture notes for that codebase. This
@@ -45,7 +46,7 @@ implementation and verify other languages against its known-answer test values.
 ```
 dotnet/       .NET libraries — see dotnet/AGENTS.md
 typescript/   TypeScript/JS library — see typescript/AGENTS.md
-python/       Reserved for a future PyPI package (not yet implemented)
+python/       Python library — see python/AGENTS.md
 audits/       Security audit reports + AUDITS-INSTRUCTIONS.md - see below
 LICENSE.txt   Single license for the whole repo (all languages)
 README.md     Repo-level overview (this repo's front door)
@@ -66,23 +67,32 @@ No root `.editorconfig`.
   npm Automation token (`NPM_TOKEN` secret) — not OIDC, since npm's Trusted Publishing requires
   a package to already exist, which doesn't hold for six brand-new `@arc76/*` scoped packages.
   See `docs/github-secrets-setup.md` for the migration path to OIDC once they exist.
+- `publish-pypi.yml` — path-triggered on `python/**` only; diffs each of the six `arc76-*`
+  packages' own folder independently and builds+publishes only the ones that changed, via PyPI
+  **Trusted Publishing** (OIDC — no stored API token, unlike the npm workflow, since PyPI's
+  Trusted Publishing doesn't require the project to already exist on the index the way npm's
+  did at the time that workflow was written).
 
-**Versions are computed by CI, not hand-maintained** — see `dotnet/AGENTS.md` and
-`typescript/AGENTS.md`'s "Versioning" sections. In short: `1.0.{increment}.{yyyyMMddHH}` for
-NuGet packages (`{increment}.{MMdd}` for the compiled AssemblyVersion/FileVersion, since that's
-a UInt16-per-component field), and `1.0.{increment}{yyyyMMddHH}` (concatenated, not dotted —
-semver doesn't allow a 4th segment) for npm packages. Either way, the exact publish date/hour
-is always readable directly from the version number — that's the point of the scheme, so don't
-"simplify" it back to a plain incrementing number without preserving that property.
+**Versions are computed by CI, not hand-maintained** — see `dotnet/AGENTS.md`,
+`typescript/AGENTS.md`, and `python/AGENTS.md`'s "Versioning" sections. In short:
+`1.0.{increment}.{yyyyMMddHH}` for NuGet packages (`{increment}.{MMdd}` for the compiled
+AssemblyVersion/FileVersion, since that's a UInt16-per-component field), and
+`1.0.{increment}{yyyyMMddHH}` (concatenated, not dotted — semver doesn't allow a 4th segment)
+for npm packages. PyPI packages use the same 3-segment scheme as npm
+(`1.{increment}.{yyyyMMddHH}`), since PEP 440 release segments have the same "no 4th dotted
+date segment" constraint as semver. Either way, the exact publish date/hour is always readable
+directly from the version number — that's the point of the scheme, so don't "simplify" it back
+to a plain incrementing number without preserving that property.
 
-**Neither workflow is triggered by an `audits/` folder** (or anything outside `dotnet/`/
-`typescript/`) — that's deliberate, so running an audit (see `audits/AUDITS-INSTRUCTIONS.md`;
-triggered by the user typing `do new audit`) never force-publishes anything. If you
-add a third workflow or change these triggers, preserve that property: publishing should only
-ever be a side effect of an actual `dotnet/` or `typescript/` code change, never of unrelated
-repo activity. See `docs/github-secrets-setup.md` for the one-time nuget.org/npmjs.com/GitHub
-setup these workflows assume (the NuGet Trusted Publishing policy, the `@arc76` npm org, the
-`NUGET_USER`/`NPM_TOKEN` secrets, the optional `release` environment).
+**None of the three workflows is triggered by the `audits/` folder** (or anything outside
+`dotnet/`/`typescript/`/`python/`) — that's deliberate, so running an audit (see
+`audits/AUDITS-INSTRUCTIONS.md`; triggered by the user typing `do new audit`) never
+force-publishes anything. If you add a fourth workflow or change these triggers, preserve that
+property: publishing should only ever be a side effect of an actual `dotnet/`/`typescript/`/
+`python/` code change, never of unrelated repo activity. See `docs/github-secrets-setup.md` for
+the one-time nuget.org/npmjs.com/pypi.org/GitHub setup these workflows assume (the NuGet
+Trusted Publishing policy, the `@arc76` npm org, the PyPI Trusted Publishing policies for each
+`arc76-*` project, the `NUGET_USER`/`NPM_TOKEN` secrets, the optional `release` environment).
 
 ## History
 
@@ -100,6 +110,10 @@ setup these workflows assume (the NuGet Trusted Publishing policy, the `@arc76` 
   and switched from npm to pnpm as its package manager.
 - A professional "network of chains" logo (`assets/arc76-logo-512.png`) was created and wired
   into every NuGet package's `PackageIcon` and every npm package's README.
+- `python/` was implemented, mirroring `dotnet/`/`typescript/`'s per-chain package split from
+  day one (`arc76-core` + `arc76-algorand`/`.ethereum`/`.bitcoin`/`.bitcoincash`/`.solana`,
+  under the shared `arc76.*` namespace package) — there was never a single merged `arc76`
+  Python package to migrate away from.
 
 All of this is documented in `dotnet/README.md`'s migration guides and should not be
 repeated/reverted without a clear reason.
