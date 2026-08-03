@@ -1,0 +1,28 @@
+{
+  "name": "arc76-bitcoincash",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "license": "MIT",
+  "author": "Ludovit Scholtz",
+  "description": "Deterministic ARC76 account derivation for Bitcoin Cash (CashAddr addresses). https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scholtz/AlgorandARC76AccountDotNet.git",
+    "directory": "typescript/packages/bitcoincash"
+  },
+  "keywords": ["arc76", "Bitcoin Cash", "cryptography", "account generation"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "jest"
+  },
+  "dependencies": {
+    "arc76-core": "workspace:*",
+    "bitcoinjs-lib": "^7.0.1",
+    "cashaddrjs": "^0.4.4",
+    "ecpair": "^3.0.1",
+    "tiny-secp256k1": "^2.2.4"
+  },
+  "files": ["dist", "README.md"]
+}

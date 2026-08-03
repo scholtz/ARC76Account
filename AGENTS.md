@@ -12,8 +12,9 @@ top-level folder, independently versioned and published:
 - **`dotnet/`** — .NET, published to NuGet as `ARC76Account.Core` + one package per chain
   (`ARC76Account.Algorand`, `.Ethereum`, `.Bitcoin`, `.BitcoinCash`, `.Solana`). See
   [`dotnet/AGENTS.md`](dotnet/AGENTS.md).
-- **`typescript/`** — TypeScript/JS, published to npm as `arc76`. Algorand only. See
-  [`typescript/AGENTS.md`](typescript/AGENTS.md).
+- **`typescript/`** — TypeScript/JS, a pnpm workspace publishing one npm package per chain
+  (`arc76-core` + `arc76-algorand`, `.ethereum`, `.bitcoin`, `.bitcoincash` — no Solana package
+  yet), mirroring `dotnet/`'s architecture. See [`typescript/AGENTS.md`](typescript/AGENTS.md).
 - **`python/`** — reserved for a future PyPI package. Not implemented yet — no AGENTS.md there
   until there's something to document.
 
@@ -60,6 +61,10 @@ No CI workflow exists yet (no `.github/workflows`). No root `.editorconfig`.
   the previously-separate `arc76` npm package's source was copied in under `typescript/` (as a
   fresh copy, not a history-preserving merge — its original repo/history is untouched and lives
   separately on GitHub).
+- Immediately after: `typescript/` was itself split from the single `arc76` package into a
+  pnpm workspace with one package per chain (`arc76-core` + `arc76-algorand`/`.ethereum`/
+  `.bitcoin`/`.bitcoincash`), mirroring `dotnet/`'s per-chain package architecture, and switched
+  from npm to pnpm as its package manager.
 
 All of this is documented in `dotnet/README.md`'s migration guides and should not be
 repeated/reverted without a clear reason.

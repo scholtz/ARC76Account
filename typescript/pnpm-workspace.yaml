@@ -1,0 +1,12 @@
+packages:
+  - "packages/*"
+allowBuilds:
+  # Native resolver binary used internally by jest-resolve (Jest 30). Legitimate
+  # first-party Jest dependency, not a third-party plugin.
+  unrs-resolver: true
+  # Optional native perf addons for `ws` (transitive dep of `ethers`, used only for its optional
+  # WebSocket JSON-RPC provider). We only build a Wallet from a private key - no network
+  # providers - so these are unnecessary; left disabled rather than compiling native code we
+  # don't need.
+  bufferutil: false
+  utf-8-validate: false

@@ -1,0 +1,29 @@
+{
+  "name": "arc76-ethereum",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "license": "MIT",
+  "author": "Ludovit Scholtz",
+  "description": "Deterministic ARC76 account derivation for Ethereum and other EVM-compatible chains. https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scholtz/AlgorandARC76AccountDotNet.git",
+    "directory": "typescript/packages/ethereum"
+  },
+  "keywords": ["arc76", "Ethereum", "EVM", "cryptography", "account generation"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "jest"
+  },
+  "dependencies": {
+    "arc76-core": "workspace:*",
+    "buffer": "^6.0.3",
+    "ethers": "^6.17.0"
+  },
+  "browser": {
+    "buffer": "buffer/"
+  },
+  "files": ["dist", "README.md"]
+}

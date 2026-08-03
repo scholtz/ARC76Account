@@ -196,12 +196,15 @@ PublishScripts/
 *.nupkg
 # NuGet Symbol Packages
 *.snupkg
-# The packages folder can be ignored because of Package Restore
-**/[Pp]ackages/*
+# The packages folder can be ignored because of Package Restore (legacy packages.config-style
+# NuGet restore; this repo's .NET projects use PackageReference, so this rarely applies, but
+# it's scoped under dotnet/ so it can never collide with typescript/packages/, our pnpm
+# workspace's package folder, which must NOT be ignored).
+dotnet/**/[Pp]ackages/*
 # except build/, which is used as an MSBuild target.
-!**/[Pp]ackages/build/
+!dotnet/**/[Pp]ackages/build/
 # Uncomment if necessary however generally it will be regenerated when needed
-#!**/[Pp]ackages/repositories.config
+#!dotnet/**/[Pp]ackages/repositories.config
 # NuGet v3's project.json files produces more ignorable files
 *.nuget.props
 *.nuget.targets

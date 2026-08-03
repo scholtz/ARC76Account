@@ -1,0 +1,25 @@
+{
+  "name": "arc76-algorand",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "license": "MIT",
+  "author": "Ludovit Scholtz",
+  "description": "Deterministic ARC76 account derivation for Algorand. https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scholtz/AlgorandARC76AccountDotNet.git",
+    "directory": "typescript/packages/algorand"
+  },
+  "keywords": ["arc76", "Algorand", "ED25519", "cryptography", "account generation"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "jest"
+  },
+  "dependencies": {
+    "arc76-core": "workspace:*",
+    "algosdk": "^3.6.0"
+  },
+  "files": ["dist", "README.md"]
+}

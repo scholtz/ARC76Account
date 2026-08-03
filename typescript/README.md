@@ -1,48 +1,103 @@
-# ARC76 NPM LIBRARY
+# ARC76 Account (TypeScript)
 
 > Part of the [ARC76 Account monorepo](../README.md), which also has a
-> [.NET implementation](../dotnet/README.md) (multiple chains: Algorand, Ethereum/EVM, Bitcoin,
-> Bitcoin Cash, Solana). This package currently supports **Algorand only**.
+> [.NET implementation](../dotnet/README.md).
 
-This is npm library for password generated ED25519 accounts and used mainly by the algorand community.
+TypeScript implementation of the
+[Algorand ARC76 Account Standard](https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md):
+deterministic, password-derived accounts, with one npm package and one namespace per supported
+chain — mirroring the `dotnet/` implementation's architecture (`ARC76Account.Core` +
+one package per chain).
 
-[ARC76 Specs](https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md)
+This is a [pnpm](https://pnpm.io) workspace (`packages/*`); each package below is published to
+npm independently.
 
-## Usage
+## Supported chains
 
-Install npm package
+| Chain              | Package               | Underlying key library      |
+|--------------------|-------------------------|-------------------------------|
+| Algorand (AVM)     | [`arc76-algorand`](packages/algorand/README.md)     | `algosdk`               |
+| Ethereum / EVM     | [`arc76-ethereum`](packages/ethereum/README.md)     | `ethers` v6              |
+| Bitcoin            | [`arc76-bitcoin`](packages/bitcoin/README.md)       | `bitcoinjs-lib` + `ecpair` |
+| Bitcoin Cash       | [`arc76-bitcoincash`](packages/bitcoincash/README.md) | `bitcoinjs-lib` + `ecpair` + `cashaddrjs` |
+| —                  | [`arc76-core`](packages/core/README.md) (shared seed derivation, not usually installed directly) | — |
 
-```
-npm i arc76 --save
-```
+Every chain package exposes the same shape:
 
-Import package
-
-```
-import arc76 from "arc76"
-```
-
-### Password generated account
-
-```
-const account: algosdk.Account = arc76.generateAlgorandAccount("password")
-```
-
-### Password generated account for slot 1
-
-```
-const account: algosdk.Account = arc76.generateAlgorandAccount("password","",1)
+```ts
+getAccount(password: string, slot?: number): Promise<...>;
+getEmailAccount(email: string, password: string, slot?: number): Promise<...>;
 ```
 
-### Email password generated account
+`slot` (default `0`) lets a single password derive multiple independent accounts on the same
+chain. See each package's own README for its exact return type and how to get an
+address/private key out of it (it varies by underlying library, same as in `dotnet/`).
+
+## Install
 
 ```
-const account: algosdk.Account = arc76.generateAlgorandAccount("12345678901234567890123456789012345678901234567890","email@example.com")
-expect(algosdk.encodeAddress(account.addr.publicKey)).toBe("5AHWQJ5D52K4GRW4JWQ5GMR53F7PDSJEGT4PXVFSBQYE7VXDVG3WSPWSBM");
+npm i arc76-algorand --save     # Algorand (AVM)
+npm i arc76-ethereum --save     # Ethereum / EVM-compatible chains
+npm i arc76-bitcoin --save      # Bitcoin
+npm i arc76-bitcoincash --save  # Bitcoin Cash
 ```
 
-### Email password generated account for slot 1
+Install only the chain package(s) you need — `arc76-core` (the shared PBKDF2 seed derivation)
+comes in transitively.
+
+Please use a password of at least 50 characters for real accounts — the account's security is
+entirely the password's security. (Each package enforces a 16-character minimum in code; treat
+that as a hard floor, not a recommendation.)
+
+## Cross-language compatibility
+
+Every package here derives the exact same key material as the equivalent `dotnet/` package for
+the same password/email/slot (PBKDF2-HMAC-SHA256, 999,999 iterations, ARC76's salt/input string
+format). Each package's tests reuse the literal known-answer values from
+`dotnet/TestARC76/*.cs` to prove this.
+
+## Development (this workspace)
 
 ```
-const account: algosdk.Account = arc76.generateAlgorandAccount("password","email@example.com",1)
+pnpm install
+pnpm build   # builds every package
+pnpm test    # tests every package
 ```
+
+To work on a single package: `pnpm --filter arc76-algorand test` (or `build`). Note:
+`arc76-core` must be built (`pnpm --filter arc76-core build`) before other packages can resolve
+its types/dist during their own build, since workspace packages link to each other's `dist/`
+output rather than their TypeScript source.
+
+## Migration guide: `arc76` (v1.x) → `arc76-algorand`
+
+This workspace replaces the single `arc76` npm package with per-chain packages, mirroring the
+`dotnet/` package split. `arc76` is not maintained going forward — no compatibility shim is
+provided.
+
+```diff
+- npm i arc76 --save
++ npm i arc76-algorand --save
+```
+
+```diff
+- import arc76 from "arc76";
+- const account = await arc76.generateAlgorandAccount(password, email, slot);
++ import { getAccount, getEmailAccount } from "arc76-algorand";
++ const account = await getAccount(password, slot);       // no email
++ const account = await getEmailAccount(email, password, slot); // with email
+```
+
+Key differences from the old single-function API:
+- `generateAlgorandAccount(password, email, slot)` (one function, optional email) is now two
+  functions, `getAccount(password, slot)` and `getEmailAccount(email, password, slot)` —
+  mirroring `dotnet/`'s `ARC76Account.Algorand.ARC76.GetAccount`/`GetEmailAccount` exactly.
+  Note the parameter order: email comes first in `getEmailAccount`, before password.
+- The derivation algorithm itself is unchanged — the same password/email/slot produces the
+  same account it always did.
+
+## AI-assisted development
+
+If you're using an AI coding assistant to write code against these packages, see
+[AI_INTEGRATION.md](AI_INTEGRATION.md) for a concise, LLM-friendly reference of the current API
+surface, common patterns, and pitfalls to avoid.

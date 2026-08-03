@@ -18,9 +18,10 @@ chain SDK. Adding a new chain means adding one new project, not a new file in an
 never invent a new derivation scheme, never duplicate the PBKDF2 logic, and never add another
 chain's SDK dependency to an unrelated project.
 
-If instead asked to add chain support to the TypeScript package (`typescript/`), this skill
-doesn't apply as-is — that package currently has a single-chain (Algorand-only), single-file
-structure; see `typescript/AGENTS.md`.
+If instead asked to add chain support to the TypeScript packages (`typescript/`), this skill
+doesn't directly apply — that's a pnpm workspace with its own per-chain package structure
+(`arc76-core` + one npm package per chain); see `typescript/AGENTS.md`'s own "Adding support
+for a new chain" section for the equivalent process there.
 
 ## Steps
 

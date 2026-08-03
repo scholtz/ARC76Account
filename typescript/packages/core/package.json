@@ -1,0 +1,27 @@
+{
+  "name": "arc76-core",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "license": "MIT",
+  "author": "Ludovit Scholtz",
+  "description": "Shared ARC76 (PBKDF2-HMAC-SHA256) seed derivation used by the per-chain arc76-* packages (arc76-algorand, arc76-ethereum, arc76-bitcoin, arc76-bitcoincash, arc76-solana). https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scholtz/AlgorandARC76AccountDotNet.git",
+    "directory": "typescript/packages/core"
+  },
+  "keywords": ["arc76", "cryptography", "account generation", "pbkdf2"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "jest"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3"
+  },
+  "browser": {
+    "buffer": "buffer/"
+  },
+  "files": ["dist", "README.md"]
+}

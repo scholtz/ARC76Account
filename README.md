@@ -10,7 +10,7 @@ and published, and has its own detailed README:
 | Language   | Folder                        | Published as                                                                 | Status      |
 |------------|--------------------------------|-------------------------------------------------------------------------------|-------------|
 | .NET       | [`dotnet/`](dotnet/README.md)         | NuGet: `ARC76Account.Algorand`, `.Ethereum`, `.Bitcoin`, `.BitcoinCash`, `.Solana`, `.Core` | Available   |
-| TypeScript | [`typescript/`](typescript/README.md) | npm: [`arc76`](https://www.npmjs.com/package/arc76)                          | Available (Algorand only) |
+| TypeScript | [`typescript/`](typescript/README.md) | npm: `arc76-algorand`, `arc76-ethereum`, `arc76-bitcoin`, `arc76-bitcoincash`, `arc76-core` | Available (no Solana yet) |
 | Python     | [`python/`](python/README.md)         | PyPI (planned)                                                                | Not yet implemented |
 
 ## Which folder do I want?
@@ -18,7 +18,8 @@ and published, and has its own detailed README:
 - Building a .NET/C# app? → [`dotnet/README.md`](dotnet/README.md) — supports Algorand,
   Ethereum/EVM, Bitcoin, Bitcoin Cash, and Solana, one NuGet package per chain.
 - Building a JS/TS app (browser or Node)? → [`typescript/README.md`](typescript/README.md) —
-  currently supports Algorand only.
+  supports Algorand, Ethereum/EVM, Bitcoin, and Bitcoin Cash (no Solana package yet), one npm
+  package per chain, managed as a pnpm workspace.
 - Python isn't available yet — see [`python/README.md`](python/README.md).
 
 ## Shared ARC76 semantics

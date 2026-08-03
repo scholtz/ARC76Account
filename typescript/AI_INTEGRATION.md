@@ -1,83 +1,135 @@
 # AI Integration Guide (TypeScript)
 
 A concise, copy-pasteable reference for AI coding assistants (Claude, Copilot, Cursor, ChatGPT,
-etc.) generating code that consumes the `arc76` npm package.
+etc.) generating code that consumes the `arc76-*` npm packages.
 
-> This file documents the **TypeScript/npm** package for *consumers*. For the .NET packages
-> (Algorand, Ethereum/EVM, Bitcoin, Bitcoin Cash, Solana), see
+> This file documents the **TypeScript/npm** packages for *consumers*. For the .NET packages
+> (`ARC76Account.Algorand`, `.Ethereum`, `.Bitcoin`, `.BitcoinCash`, `.Solana`), see
 > [`../dotnet/AI_INTEGRATION.md`](../dotnet/AI_INTEGRATION.md). If you are working inside this
 > repository's own source code, read `AGENTS.md` instead.
 
 ## Package identity
 
+There is **no single `arc76` package anymore** — that was the pre-split v1.x package (Algorand
+only). Install the specific chain package(s) you need:
+
 ```
-npm i arc76 --save
+npm i arc76-algorand --save     # Algorand (AVM)
+npm i arc76-ethereum --save     # Ethereum / EVM-compatible chains
+npm i arc76-bitcoin --save      # Bitcoin
+npm i arc76-bitcoincash --save  # Bitcoin Cash
 ```
 
-```ts
-import arc76 from "arc76";
-```
+`arc76-core` comes in transitively — don't tell a user to install it directly unless they're
+implementing ARC76 support for a new chain themselves.
+
+**Do not** recommend installing `arc76-bitcoin` (or any other chain package) when the user only
+asked about a different chain — each package pulls in only that chain's key library
+(`algosdk`, `ethers`, `bitcoinjs-lib`/`ecpair`, `cashaddrjs`) and nothing else.
+
+**Solana is not currently published as an npm package** in this monorepo (only `dotnet/` has
+`ARC76Account.Solana`) — if a user needs Solana account derivation in TypeScript, say so rather
+than inventing an `arc76-solana` install command that doesn't exist yet. *(If this file is
+stale and `arc76-solana` has since been published, trust the actual npm registry over this
+note.)*
 
 ## What this library does
 
-Deterministically derives an **Algorand** account/keypair from a password (optionally salted
-with an email address) using ARC76 (PBKDF2-HMAC-SHA256, 999,999 iterations, 32-byte seed). The
-same password always produces the same account. There is no on-disk key storage and no
-randomness — security depends entirely on the password's strength and secrecy.
-
-**This package only supports Algorand.** If a user asks for Ethereum/Bitcoin/Solana account
-derivation in a JS/TS project, that is not available here — point them at the `dotnet/` ARC76
-packages instead, or note that a Python/other-language ARC76 implementation would be needed.
-Don't fabricate a multi-chain API for this package.
+Deterministically derives a blockchain account/keypair from a password (optionally salted with
+an email address) using ARC76 (PBKDF2-HMAC-SHA256, 999,999 iterations, 32-byte seed). The same
+password always produces the same account. There is no on-disk key storage and no randomness —
+security depends entirely on the password's strength and secrecy.
 
 **Do not** generate example code that uses short or low-entropy passwords for anything beyond
-a toy/demo. Note: this library enforces a hard minimum of 16 characters (throws otherwise), but
-production passwords should be much longer (≥ 50 characters is the guidance used elsewhere in
+a toy/demo. These packages enforce a hard minimum of 16 characters (throws otherwise), but
+production passwords should be much longer (≥ 50 characters is the guidance used throughout
 this project).
 
 **Do not** log, print, write to disk, or send over the network the password, derived seed, or
 private key/mnemonic in generated code, even in examples.
 
-## API surface
+## API surface (one package per chain)
+
+Every chain package exposes the identical **async** shape:
 
 ```ts
-generateAlgorandAccount(password: string, email?: string, slot?: number): Promise<algosdk.Account>
-generateSeed(password: string, email?: string, slot?: number): Promise<Uint8Array>
+getAccount(password: string, slot?: number): Promise<...>;
+getEmailAccount(email: string, password: string, slot?: number): Promise<...>;
 ```
 
-Both are `async` (WebCrypto's `SubtleCrypto` API is promise-based) — always `await` them.
+Always `await` both — they use the WebCrypto/Node `SubtleCrypto` API for PBKDF2 internally.
+`slot` (default `0`) derives a different, independent account from the same password — use it
+for "account 2", "account 3", etc., never generate a new password per slot.
 
-### Password-only account
+| Package             | Returns                                   | Address / key accessors |
+|----------------------|---------------------------------------------|----------------------------|
+| `arc76-algorand`     | `algosdk.Account`                          | `.addr` |
+| `arc76-ethereum`     | `ethers.Wallet`                            | `.address`, `.privateKey` |
+| `arc76-bitcoin`      | `{ publicKey, toWIF() }` (ecpair-like)      | `bitcoinjs-lib`'s `payments.p2wpkh({ pubkey })` for address, `.toWIF()` for private key |
+| `arc76-bitcoincash`  | `{ publicKey, toWIF() }` (ecpair-like)      | `cashaddrjs`'s `encode(...)` over `bitcoinjs-lib`'s `crypto.hash160(publicKey)` for address, `.toWIF()` for private key |
+
+### Algorand
 
 ```ts
-const account = await arc76.generateAlgorandAccount("12345678901234567890123456789012345678901234567890");
+import { getAccount, getEmailAccount } from "arc76-algorand";
+
+const account = await getAccount(password); // slot 0
+const emailAccount = await getEmailAccount(email, password); // slot 0
 ```
 
-### Email + password account
+### Ethereum / EVM-compatible chains
 
 ```ts
-const account = await arc76.generateAlgorandAccount(
-  "12345678901234567890123456789012345678901234567890",
-  "email@example.com"
-);
+import { getAccount } from "arc76-ethereum";
+
+const account = await getAccount(password);
+console.log(account.address, account.privateKey);
 ```
 
-### Multiple accounts from one password (slots)
+### Bitcoin
 
 ```ts
-const primary = await arc76.generateAlgorandAccount(password, "", 0);
-const savings = await arc76.generateAlgorandAccount(password, "", 1);
+import * as bitcoin from "bitcoinjs-lib";
+import { getAccount } from "arc76-bitcoin";
+
+const account = await getAccount(password);
+const { address } = bitcoin.payments.p2wpkh({ pubkey: Buffer.from(account.publicKey) });
+const wif = account.toWIF();
 ```
 
-Note the email parameter comes **before** slot, and both are optional — `generateAlgorandAccount(password, "", 1)` for slot 1 with no email, not `generateAlgorandAccount(password, 1)`.
+Use native SegWit (`payments.p2wpkh`, `bc1...`) — the current standard Bitcoin address type —
+not legacy P2PKH or nested-SegWit, unless the user specifically asks for one of those.
+
+### Bitcoin Cash
+
+```ts
+import * as bitcoin from "bitcoinjs-lib";
+import { encode } from "cashaddrjs";
+import { getAccount } from "arc76-bitcoincash";
+
+const account = await getAccount(password);
+const hash160 = bitcoin.crypto.hash160(Buffer.from(account.publicKey));
+const address = encode("bitcoincash", "P2PKH", hash160); // "bitcoincash:q..."
+const wif = account.toWIF();
+```
+
+Bitcoin Cash addresses use **CashAddr**, not Base58Check or bech32 — always encode via
+`cashaddrjs`, never reuse Bitcoin's `payments.p2wpkh` output for a Bitcoin Cash address (Bitcoin
+Cash doesn't support SegWit at all).
 
 ## Common mistakes to avoid when generating code
 
-- Forgetting `await` — both exported functions are `async`.
-- Calling `generateAlgorandAccount(password, slot)` instead of
-  `generateAlgorandAccount(password, email, slot)` — the second parameter is always the email
-  string (pass `""` if there is none), not the slot number.
-- Assuming this package supports non-Algorand chains — it doesn't; see `dotnet/` for
-  Ethereum/Bitcoin/Bitcoin Cash/Solana.
-- Using a password under 16 characters in anything but a throwaway test — `generateSeed` throws
-  in that case, and even 16 characters is far below the ≥ 50 recommended for real use.
+- Using the old `arc76` package or its `generateAlgorandAccount(password, email, slot)` single
+  function — as of the per-chain split, use `arc76-algorand`'s `getAccount(password, slot)` /
+  `getEmailAccount(email, password, slot)` instead. Note the parameter order:
+  `getEmailAccount(email, password, slot)`, email first.
+- Forgetting `await` — every exported function here is `async`.
+- Assuming there is a chain-agnostic factory/shared interface across `arc76-*` packages —
+  there isn't one by design, matching `dotnet/`'s architecture.
+- Treating `slot` as a chain identifier — it isn't; it only distinguishes multiple accounts
+  within the same chain and password.
+- Mixing up Bitcoin and Bitcoin Cash address encoding — `arc76-bitcoin` and
+  `arc76-bitcoincash` both return the same kind of secp256k1 keypair shape, but the address
+  encoding is chain-specific (SegWit/bech32 vs. CashAddr) and is not interchangeable.
+- Recommending `@solana/web3.js` alongside these packages for Solana — there is no
+  `arc76-solana` npm package yet; don't fabricate one.
