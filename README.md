@@ -24,6 +24,42 @@ and published, and has its own detailed README:
   managed as a pnpm workspace.
 - Python isn't available yet — see [`python/README.md`](python/README.md).
 
+## Packages
+
+Every package below derives account key material identically (same password/email/slot ⇒ same
+underlying key) — see [Shared ARC76 semantics](#shared-arc76-semantics).
+
+### .NET (NuGet)
+
+One shared [`dotnet/README.md`](dotnet/README.md) covers all six — there's no per-package
+README on the .NET side.
+
+| Package                                                                    | Chain              | What it depends on               |
+|------------------------------------------------------------------------------|--------------------|-------------------------------------|
+| [`ARC76Account.Core`](https://www.nuget.org/packages/ARC76Account.Core)         | — (shared seed derivation, not usually installed directly) | no chain SDK |
+| [`ARC76Account.Algorand`](https://www.nuget.org/packages/ARC76Account.Algorand) | Algorand (AVM)     | `Algorand4`; also ships `ARC76Signer`/`IAlgorandSigner` for ASP.NET Core |
+| [`ARC76Account.Ethereum`](https://www.nuget.org/packages/ARC76Account.Ethereum) | Ethereum / EVM     | `Nethereum.Signer`                  |
+| [`ARC76Account.Bitcoin`](https://www.nuget.org/packages/ARC76Account.Bitcoin)   | Bitcoin            | `NBitcoin`                          |
+| [`ARC76Account.BitcoinCash`](https://www.nuget.org/packages/ARC76Account.BitcoinCash) | Bitcoin Cash | `NBitcoin` + `NBitcoin.Altcoins`     |
+| [`ARC76Account.Solana`](https://www.nuget.org/packages/ARC76Account.Solana)     | Solana             | `Solnet.Wallet` + `Chaos.NaCl.Standard` |
+
+### TypeScript (npm, `@arc76` organization)
+
+Each has its own README, linked below.
+
+| Package                                                              | Chain              | What it depends on               |
+|--------------------------------------------------------------------------|--------------------|-------------------------------------|
+| [`@arc76/core`](https://www.npmjs.com/package/@arc76/core) ([README](typescript/packages/core/README.md)) | — (shared seed derivation, not usually installed directly) | no chain SDK |
+| [`@arc76/algorand`](https://www.npmjs.com/package/@arc76/algorand) ([README](typescript/packages/algorand/README.md)) | Algorand (AVM) | `algosdk` |
+| [`@arc76/ethereum`](https://www.npmjs.com/package/@arc76/ethereum) ([README](typescript/packages/ethereum/README.md)) | Ethereum / EVM | `ethers` v6 |
+| [`@arc76/bitcoin`](https://www.npmjs.com/package/@arc76/bitcoin) ([README](typescript/packages/bitcoin/README.md)) | Bitcoin | `bitcoinjs-lib` + `ecpair` + `tiny-secp256k1` |
+| [`@arc76/bitcoincash`](https://www.npmjs.com/package/@arc76/bitcoincash) ([README](typescript/packages/bitcoincash/README.md)) | Bitcoin Cash | `bitcoinjs-lib` + `ecpair` + `cashaddrjs` |
+| [`@arc76/solana`](https://www.npmjs.com/package/@arc76/solana) ([README](typescript/packages/solana/README.md)) | Solana | `tweetnacl` + `bs58` |
+
+### Python
+
+Not implemented yet — see [`python/README.md`](python/README.md).
+
 ## Shared ARC76 semantics
 
 Every implementation in this repo derives account key material the same way, so a given
