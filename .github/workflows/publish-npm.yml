@@ -51,9 +51,15 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
+      # There is no repo-root package.json (the pnpm workspace root is typescript/), so the
+      # action must be pointed at typescript/package.json explicitly - otherwise it looks for
+      # "packageManager" in a repo-root package.json that doesn't exist and fails with
+      # "No pnpm version is specified."
       - name: Setup pnpm
         if: steps.changed.outputs.changed == 'true'
-        uses: pnpm/action-setup@v4 # reads the pinned version from typescript/package.json's "packageManager"
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: typescript/package.json
 
       - name: Setup Node
         if: steps.changed.outputs.changed == 'true'
