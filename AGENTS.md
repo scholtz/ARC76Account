@@ -46,6 +46,7 @@ implementation and verify other languages against its known-answer test values.
 dotnet/       .NET libraries — see dotnet/AGENTS.md
 typescript/   TypeScript/JS library — see typescript/AGENTS.md
 python/       Reserved for a future PyPI package (not yet implemented)
+audits/       Security audit reports + AUDITS-INSTRUCTIONS.md - see below
 LICENSE.txt   Single license for the whole repo (all languages)
 README.md     Repo-level overview (this repo's front door)
 AI_INTEGRATION.md  Repo-level index of per-language consumer-facing AI guides
@@ -75,7 +76,8 @@ is always readable directly from the version number — that's the point of the 
 "simplify" it back to a plain incrementing number without preserving that property.
 
 **Neither workflow is triggered by an `audits/` folder** (or anything outside `dotnet/`/
-`typescript/`) — that's deliberate, so running an audit never force-publishes anything. If you
+`typescript/`) — that's deliberate, so running an audit (see `audits/AUDITS-INSTRUCTIONS.md`;
+triggered by the user typing `do new audit`) never force-publishes anything. If you
 add a third workflow or change these triggers, preserve that property: publishing should only
 ever be a side effect of an actual `dotnet/` or `typescript/` code change, never of unrelated
 repo activity. See `docs/github-secrets-setup.md` for the one-time nuget.org/npmjs.com/GitHub
