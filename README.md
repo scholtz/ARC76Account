@@ -25,6 +25,7 @@ its strength *is* the account's security.
 |-------------------|---------------------------|------------------------------------|
 | Algorand (AVM)     | `ARC76Account.Algorand`   | `Algorand.Algod.Model.Account`     |
 | Ethereum / EVM     | `ARC76Account.Ethereum`   | `Nethereum.Signer.EthECKey`        |
+| Bitcoin            | `ARC76Account.Bitcoin`    | `NBitcoin.Key`                     |
 
 Every chain namespace exposes the same shape:
 
@@ -78,6 +79,33 @@ var account = ARC76Account.Ethereum.ARC76.GetEmailAccount(
     "12345678901234567890123456789012345678901234567890");
 Assert.That(account.GetPublicAddress(), Is.EqualTo("0x0b6CEF2E7844F27019Fce92205F5FedF684c6926"));
 Assert.That(account.GetPrivateKey(), Is.EqualTo("0xe1078b9af5d2b58abc819135f6b8f358a3a36dd04d4707eb51f481d766a86915"));
+```
+
+### Bitcoin account from a password
+
+Returns an `NBitcoin.Key`. The address uses native SegWit (BIP173 bech32, `bc1...`) — the
+current standard for everyday Bitcoin addresses — and the private key uses WIF, the standard
+Bitcoin private-key encoding:
+
+```c#
+using NBitcoin;
+
+NBitcoin.Key key = ARC76Account.Bitcoin.ARC76.GetAccount(
+    "12345678901234567890123456789012345678901234567890");
+string address = key.PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.Main).ToString();
+string privateKeyWif = key.GetWif(Network.Main).ToString();
+Assert.That(address, Is.EqualTo("bc1qudvfvw05l2a90kkl2xdjkh08egyt50ekkprkas"));
+Assert.That(privateKeyWif, Is.EqualTo("L2AEXy6SztUrAa6bMZLyamdbF6xdALS6pUWBct6JKRLz9xDsm57Z"));
+```
+
+### Bitcoin account from an email + password
+
+```c#
+NBitcoin.Key key = ARC76Account.Bitcoin.ARC76.GetEmailAccount(
+    "email@example.com",
+    "12345678901234567890123456789012345678901234567890");
+string address = key.PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.Main).ToString();
+Assert.That(address, Is.EqualTo("bc1qwjwpxtglzrv06ndfrqs2uegtmamg8qdzy3mghk"));
 ```
 
 ### Same password, two chains

@@ -13,9 +13,10 @@ chain-specific key.
 The GitHub repo is still named `AlgorandARC76AccountDotNet` (unchanged); the .NET
 project/namespace/NuGet package were renamed to `ARC76Account` in v2.0.
 
-It currently derives accounts for two chains, one namespace per chain:
+It currently derives accounts for three chains, one namespace per chain:
 - **Algorand (AVM)** — `ARC76Account.Algorand.ARC76` → `Algorand.Algod.Model.Account` (via the `Algorand4` package)
 - **Ethereum / EVM** — `ARC76Account.Ethereum.ARC76` → `Nethereum.Signer.EthECKey`
+- **Bitcoin** — `ARC76Account.Bitcoin.ARC76` → `NBitcoin.Key` (native SegWit/bech32 address via `key.PubKey.GetAddress(ScriptPubKeyType.Segwit, network)`, WIF private key via `key.GetWif(network)`)
 
 Both expose the same shape: `GetAccount(password, slot = 0)` / `GetEmailAccount(email, password, slot = 0)`.
 
@@ -33,11 +34,12 @@ Published to NuGet as `ARC76Account`.
     32-byte seed into a chain-specific keypair.
   - `Algorand/ARC76.cs` — `ARC76Account.Algorand.ARC76`, Algorand/AVM account derivation
   - `Ethereum/ARC76.cs` — `ARC76Account.Ethereum.ARC76`, EVM account derivation
+  - `Bitcoin/ARC76.cs` — `ARC76Account.Bitcoin.ARC76`, Bitcoin account derivation (via `NBitcoin`)
   - `Utils/ARC76Signer.cs` — `IOptionsMonitor<ARC76Config>`-backed transaction signer (Algorand only)
   - `Utils/IAlgorandSigner.cs` — signer interface
   - `Model/Config/ARC76Config.cs` — options POCO (`Data` = password)
 - `TestARC76/` — NUnit test project
-  - `AVMTests.cs`, `EVMTests.cs` — known-answer tests (fixed password → fixed address/key), one file per chain
+  - `AVMTests.cs`, `EVMTests.cs`, `BitcoinTests.cs` — known-answer tests (fixed password → fixed address/key), one file per chain
   - `ARC76SignerTests.cs` — signer wiring + transaction-signing test
 - `README.md` — public usage docs, migration guide, and "adding a new chain" pointer (packed into the NuGet package — keep in sync with the actual namespaces/methods)
 - `AI_INTEGRATION.md` — API reference aimed at AI assistants writing *consumer* code against this package (not packed into the NuGet package)
