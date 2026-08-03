@@ -28,7 +28,7 @@ version satisfying a range, a fresh install of any of those three chain packages
 minimum). Both are fixable with a single manual `workflow_dispatch` run of each publish
 workflow. No evidence of tampering or third-party typosquatting was found.
 
-**12 findings**: 0 Critical, 2 High, 1 Medium, 6 Low, 3 Informational.
+**12 findings**: 0 Critical, 2 High, 1 Medium, 5 Low, 4 Informational.
 
 ## Fixes applied (same session)
 
@@ -172,22 +172,23 @@ All nine phases of `AUDITS-INSTRUCTIONS.md` were performed:
   set but dependents aren't. Keep `workflow_dispatch` as the manual full-republish escape hatch.
 - **Status**: Open (workflow design change — maintainer decision).
 
-### [LOW] .NET packages ship no README to nuget.org — the entropy guidance and shared-key warning are invisible at the point of install
+### [INFORMATIONAL] Initial "no README in .NET packages" finding was a false positive — corrected after re-inspection
 
-- **Location**: `dotnet/ARC76Account.*/` (no per-project README files, no `PackageReadmeFile`
-  property in `Directory.Build.props`/csproj); confirmed by extracting all six published
-  nupkgs — none contains a README.
-- **Description**: The instructions' Phase 5 asks that the ≥50-character guidance be prominent
-  in "every package's own README". The six TS packages satisfy this (and their READMEs ship in
-  the tarball and render on npmjs.com); the six NuGet packages have no README at all — a user
-  browsing nuget.org sees only the short description, with no password guidance and no
-  shared-key warning.
-- **Impact**: The single most important user-facing fact of this library (password strength *is*
-  the security model) is absent from the NuGet install surface.
-- **Recommendation**: Add a `README.md` per .NET project (or one shared via link) wired up with
-  `<PackageReadmeFile>`, carrying the ≥50-char guidance and the same-curve warning, then
-  republish (can ride the same full republish finding 2 needs).
-- **Status**: Open.
+- **Description**: An earlier draft of this report flagged the NuGet packages as shipping no
+  README. Re-inspection of the actually-extracted nupkg contents (`find` over the raw extracted
+  files, not just the nuspec) showed this was wrong: `Directory.Build.props` sets
+  `<PackageReadmeFile>README.md</PackageReadmeFile>` and packs `dotnet/README.md` (the shared
+  top-level one, resolved via `$(MSBuildThisFileDirectory)README.md` relative to the props
+  file's own folder) into every project's nupkg root. Verified present, with the ≥50-character
+  guidance and the same-curve shared-key warning both in the shipped text, in both the `Core`
+  and `Bitcoin` nupkgs (representative pre- and post-fix versions).
+- **Why this happened**: The original check read `<ItemGroup>` in `Directory.Build.props` and
+  incorrectly assumed a `README.md` referenced via `$(MSBuildThisFileDirectory)` without a
+  per-project override meant no file existed at that path per-project, rather than checking
+  what actually got packed.
+- **Status**: No action needed — noted for the record per this project's audit ground rules
+  ("verify, don't assume"; corrected here since I didn't independently re-verify before
+  initially writing it as a Low finding).
 
 ### [LOW] npm per-package READMEs lacked the same-curve shared-key warning — fixed in source; live tarballs still lack it
 

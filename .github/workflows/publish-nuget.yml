@@ -69,11 +69,14 @@ jobs:
         working-directory: dotnet
         run: dotnet test --configuration Release --no-build
 
-      # Only the projects whose own folder changed get packed+pushed below. A project depending
-      # on Core (via ProjectReference) does NOT get republished just because Core changed -
-      # its already-published nupkg keeps depending on whatever Core version it was built
-      # against, which stays available on nuget.org. Bump/republish a dependent explicitly if
-      # it needs to pick up a Core change.
+      # Every chain project also gets packed+pushed whenever ARC76Account.Core changed - not
+      # just when its own folder changed. This is deliberate: each chain nupkg's dependency on
+      # Core is pinned to an exact version (see the nuspec), and NuGet resolves the *lowest*
+      # version satisfying a range - so if Core ships a fix but a chain package isn't
+      # republished against it, a fresh `dotnet add package` for that chain still resolves the
+      # old, unfixed Core (this is exactly what audit #2, 2026-08-03, found live in
+      # ARC76Account.Bitcoin/.BitcoinCash/.Solana). Do not revert to "only own folder changed"
+      # without re-reading that report's High findings.
       - name: Determine changed packages
         id: changed
         working-directory: dotnet
@@ -81,9 +84,15 @@ jobs:
           PROJECTS=(Core Algorand Ethereum Bitcoin BitcoinCash Solana)
           BEFORE="${{ github.event.before }}"
           : > /tmp/changed-projects.txt
+          FORCE_ALL=false
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            FORCE_ALL=true
+          elif ! git diff --quiet "$BEFORE" "${{ github.sha }}" -- "ARC76Account.Core/"; then
+            FORCE_ALL=true
+          fi
           for name in "${PROJECTS[@]}"; do
             proj="ARC76Account.$name"
-            if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            if [ "$FORCE_ALL" = "true" ]; then
               echo "$proj" >> /tmp/changed-projects.txt
             elif ! git diff --quiet "$BEFORE" "${{ github.sha }}" -- "$proj/"; then
               echo "$proj" >> /tmp/changed-projects.txt

@@ -35,17 +35,22 @@ jobs:
         with:
           fetch-depth: 0 # full history, needed to diff against github.event.before
 
-      # A dependent package (e.g. @arc76/bitcoin) does NOT get republished just because
-      # @arc76/core changed - its already-published version keeps depending on whatever core
-      # version range it declares. Bump/republish a dependent explicitly if it needs a newer
-      # core.
+      # Every dependent package also gets republished whenever @arc76/core changed - not just
+      # when its own folder changed. Every dependent's package.json declares an unpinned range
+      # dependency ("@arc76/core": "^1.0.0"), so republishing core alone would leave every
+      # already-published dependent installable (npm still resolves the caret range against
+      # whatever's on the registry, unlike NuGet's lowest-wins) but silently stuck on the old
+      # core's behavior. It also protects against the failure mode audit #2 (2026-08-03) found
+      # live: core never got published at all while five dependents did, so every install of
+      # any of them 404'd on the missing "@arc76/core" dependency. Do not revert to "only own
+      # folder changed" without re-reading that report's High findings.
       - name: Check if this package's files changed
         id: changed
         run: |
           BEFORE="${{ github.event.before }}"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
-          elif git diff --quiet "$BEFORE" "${{ github.sha }}" -- "typescript/packages/${{ matrix.package }}/"; then
+          elif git diff --quiet "$BEFORE" "${{ github.sha }}" -- "typescript/packages/${{ matrix.package }}/" "typescript/packages/core/"; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
