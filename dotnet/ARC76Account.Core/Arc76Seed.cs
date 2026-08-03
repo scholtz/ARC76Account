@@ -15,19 +15,39 @@ namespace ARC76Account.Core
     {
         public const int HashSize = 32;
         private const int Iterations = 999999;
+        private const int MinPasswordLength = 16;
 
         public static byte[] Derive(string password, int slot)
         {
-            byte[] salt = Encoding.ASCII.GetBytes($"ARC-0076-{slot}-PBKDF2-999999");
+            AssertPassword(password);
+            // Salt has no user-controlled characters here (only the numeric slot), so ASCII vs
+            // UTF-8 makes no difference - kept as UTF8 anyway for consistency with the
+            // email-salted overload below and with every other ARC76 implementation.
+            byte[] salt = Encoding.UTF8.GetBytes($"ARC-0076-{slot}-PBKDF2-999999");
             byte[] input = Encoding.UTF8.GetBytes($"ARC-0076-{password}-{slot}-PBKDF2-999999");
             return Rfc2898DeriveBytes.Pbkdf2(input, salt, Iterations, HashAlgorithmName.SHA256, HashSize);
         }
 
         public static byte[] Derive(string email, string password, int slot)
         {
-            byte[] salt = Encoding.ASCII.GetBytes($"ARC-0076-{email}-{slot}-PBKDF2-999999");
+            AssertPassword(password);
+            // MUST be UTF8, not ASCII: the ARC-0076 reference implementation (and this
+            // project's own TypeScript package) encodes the salt as UTF-8 throughout. Using
+            // ASCII here previously silently mangled any non-ASCII character in `email` to '?'
+            // in the salt only (not the input below), producing a seed that disagreed with
+            // every other ARC76 implementation for the same inputs. See audits/2026-08-03-audit-report.md
+            // (Critical finding) - do not revert this to Encoding.ASCII.
+            byte[] salt = Encoding.UTF8.GetBytes($"ARC-0076-{email}-{slot}-PBKDF2-999999");
             byte[] input = Encoding.UTF8.GetBytes($"ARC-0076-{email}-{password}-{slot}-PBKDF2-999999");
             return Rfc2898DeriveBytes.Pbkdf2(input, salt, Iterations, HashAlgorithmName.SHA256, HashSize);
+        }
+
+        private static void AssertPassword(string password)
+        {
+            if (password is null || password.Length < MinPasswordLength)
+            {
+                throw new ArgumentException($"Password must be at least {MinPasswordLength} characters long", nameof(password));
+            }
         }
     }
 }

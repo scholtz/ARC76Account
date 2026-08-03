@@ -68,6 +68,17 @@ languages and chains: PBKDF2-HMAC-SHA256, 999,999 iterations, salt/input strings
 `ARC-0076-...-PBKDF2-999999`, 32-byte seed. Please tell your users to use a password of at
 least 50 characters — the account's security is entirely the password's security.
 
+> ⚠️ **Same-curve chains share the literal same private key, not just "related" keys.**
+> Bitcoin, Bitcoin Cash, and Ethereum accounts derived from the same password/email/slot are
+> the **identical secp256k1 private key** — not merely derived from a common secret via
+> separate chain-specific paths (the way a BIP32/BIP44 HD wallet isolates chains from each
+> other), but the exact same 32 bytes, just encoded differently per chain. Algorand and Solana
+> accounts derived from the same password/email/slot are likewise the **identical Ed25519
+> keypair**. Practically: leaking your Ethereum private key **is** leaking your Bitcoin and
+> Bitcoin Cash private key for that password — no additional attacker effort required. If you
+> need isolation between chains, use a different password (or `slot`) per chain rather than
+> assuming this library gives you that isolation by default.
+
 ## Repo layout
 
 ```

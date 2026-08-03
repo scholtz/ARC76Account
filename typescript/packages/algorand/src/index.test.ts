@@ -13,6 +13,15 @@ describe("getAccount", () => {
       "GIMN3RFDRRWFD7KIFSVRMXC4JXYD5ZXKT7KSN57OG4RAZPPC3L3YDM46NQ"
     );
   });
+
+  // Regression test for a slot!=0 known-answer value - see audits/2026-08-03-audit-report.md
+  // (Medium finding: no test previously exercised any slot other than the default).
+  it("matches the known slot-1 address", async () => {
+    const account = await getAccount(PASSWORD, 1);
+    expect(encodeAddress(account.addr.publicKey)).toBe(
+      "AMOLO4ICDKCOLFVJXAVIQ23TA27P3LW4AHJP54LLNV4JPIAFKBYLH3SGVQ"
+    );
+  });
 });
 
 describe("getEmailAccount", () => {

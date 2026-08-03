@@ -9,6 +9,11 @@
 
 	<ItemGroup>
 		<PackageReference Include="Nethereum.Signer" Version="6.1.0" />
+		<!-- Direct reference to raise the transitive Newtonsoft.Json floor above the version
+		     Nethereum.Signer 6.1.0 itself declares (11.0.2, GHSA-5crp-9r3c-p9vr, High) - see
+		     audits/2026-08-03-audit-report.md. Nethereum.Signer has no newer release available
+		     that fixes this itself. -->
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -130,6 +130,16 @@ project, the tests, the README, and the `.sln`/`Directory.Build.props` wiring.
 - Any change to PBKDF2 parameters (iterations, hash algorithm, salt format) is a breaking
   change to every existing derived address, on every chain — treat it as a major version bump
   and call it out loudly in the PR description, not just the changelog.
+- `Arc76Seed.cs`'s salt/input strings must be built with `Encoding.UTF8`, never
+  `Encoding.ASCII` — a past bug (`audits/2026-08-03-audit-report.md`, Critical finding, fixed)
+  used ASCII for the email-salted overload's salt, which silently mangled non-ASCII email
+  characters to `?` and broke both ARC-0076 spec compliance and cross-language determinism.
+  `Arc76SeedTests.DeriveWithNonAsciiEmailMatchesUtf8Encoding` guards against regressing this.
+- Bitcoin/BitcoinCash/Ethereum share one secp256k1 private key per password, and
+  Algorand/Solana share one Ed25519 keypair per password — this is intentional (see
+  `README.md`'s "Shared ARC76 semantics"), not a bug to "fix" by adding chain-specific salting
+  without an explicit, deliberate decision to do so (it would be a major breaking change to
+  every existing derived address).
 
 ## Versioning
 

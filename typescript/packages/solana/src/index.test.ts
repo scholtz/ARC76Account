@@ -14,6 +14,16 @@ describe("getAccount", () => {
       "3wvbZFR7njig8pAcSaHtzAVXYe779HjwrxCYiXRJS7shfWV6N3bNNynRijtz5WccRfDfhcHF5VTyq8yCv5HMAf34"
     );
   });
+
+  // Regression test for a slot!=0 known-answer value - see audits/2026-08-03-audit-report.md
+  // (Medium finding: no test previously exercised any slot other than the default).
+  it("matches the known slot-1 address and private key", async () => {
+    const account = await getAccount(PASSWORD, 1);
+    expect(bs58.encode(account.publicKey)).toBe("D9cyFwbaGdDd1Lo3MJbL6VULN8r4p3c2jrWURTUV7kB");
+    expect(bs58.encode(account.secretKey)).toBe(
+      "2WT1aN7vJse9uykpD6kgZs5zUovYKUxDKDEswPwEa9JnLgrEKseRQpxatFXfDHs9UohZB9A7qGRRZdBGzkWSi8K9"
+    );
+  });
 });
 
 describe("getEmailAccount", () => {

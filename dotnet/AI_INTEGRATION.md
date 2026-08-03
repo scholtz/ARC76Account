@@ -49,6 +49,12 @@ for anything beyond a toy/demo — always note that production passwords should 
 **Do not** log, print to console, write to disk, or send over the network the password, the
 derived seed, or any private key material in generated code, even in examples.
 
+**Do not tell a user that per-chain packages give them isolated/independent keys per chain** —
+`ARC76Account.Bitcoin`/`.BitcoinCash`/`.Ethereum` derive the literal same secp256k1 private key
+from the same password/email/slot, and `.Algorand`/`.Solana` derive the literal same Ed25519
+keypair. If a user asks for multi-chain key isolation, tell them to use a different
+password/`slot` per chain — don't imply the packages already provide that.
+
 ## API surface (one namespace per chain)
 
 Every supported chain follows the identical static-method shape:

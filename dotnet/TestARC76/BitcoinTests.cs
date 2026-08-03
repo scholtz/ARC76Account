@@ -20,5 +20,15 @@ namespace TestARC76
             Assert.That(address.ToString(), Is.EqualTo("bc1qwjwpxtglzrv06ndfrqs2uegtmamg8qdzy3mghk"));
             Assert.That(key.GetWif(Network.Main).ToString(), Is.EqualTo("L4m915x48Hasve5Dzc2BnJuUaxX85xWeF8PtUo5dP234VtSZjDtL"));
         }
+        [Test]
+        public void GetPasswordAccountSlot1Test()
+        {
+            // Regression test for a slot!=0 known-answer value - see audits/2026-08-03-audit-report.md
+            // (Medium finding: no test previously exercised any slot other than the default).
+            var key = ARC76Account.Bitcoin.ARC76.GetAccount("12345678901234567890123456789012345678901234567890", 1);
+            var address = key.PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.Main);
+            Assert.That(address.ToString(), Is.EqualTo("bc1q0l7cwnvtfwt538vv9yreuyrxuamgl470fkl8j0"));
+            Assert.That(key.GetWif(Network.Main).ToString(), Is.EqualTo("KykJVUYMpC2xCrUb8dENcRP3cvQHt6BQCskrkJvyW7fvGEVxpgWA"));
+        }
     }
 }

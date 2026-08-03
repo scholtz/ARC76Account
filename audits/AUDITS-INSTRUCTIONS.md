@@ -62,6 +62,45 @@ supposedly produced them):
 - (If `python/` has gained a published package by the time you run this, add it to scope —
   check `python/README.md`'s status first.)
 
+### Currently deployed versions
+
+**Refresh this table at the start of every audit** (it's Phase 2's first step — see the
+lookups there) and correct it here in this file before writing the dated report, so this
+instructions file always reflects reality rather than whatever was live when it was last
+edited. Each row's "Latest deployed" column is what a `dotnet add package`/`npm install` run
+by a real user would get *right now* — this is the audit's actual attack surface, not
+whatever's merely committed to `master`.
+
+| Package                    | Registry | Latest deployed    | Last checked |
+|-----------------------------|----------|---------------------|--------------|
+| `ARC76Account.Core`         | NuGet    | `1.0.1.2026080317`  | 2026-08-03   |
+| `ARC76Account.Algorand`     | NuGet    | `1.0.1.2026080317`  | 2026-08-03   |
+| `ARC76Account.Ethereum`     | NuGet    | `1.0.1.2026080317`  | 2026-08-03   |
+| `ARC76Account.Bitcoin`      | NuGet    | `1.0.1.2026080317`  | 2026-08-03   |
+| `ARC76Account.BitcoinCash`  | NuGet    | `1.0.1.2026080317`  | 2026-08-03   |
+| `ARC76Account.Solana`       | NuGet    | `1.0.1.2026080317`  | 2026-08-03   |
+| `@arc76/core`                | npm      | *not published yet* | 2026-08-03   |
+| `@arc76/algorand`            | npm      | *not published yet* | 2026-08-03   |
+| `@arc76/ethereum`            | npm      | *not published yet* | 2026-08-03   |
+| `@arc76/bitcoin`             | npm      | *not published yet* | 2026-08-03   |
+| `@arc76/bitcoincash`         | npm      | *not published yet* | 2026-08-03   |
+| `@arc76/solana`              | npm      | *not published yet* | 2026-08-03   |
+
+Lookup commands (also in Phase 2 below):
+```bash
+# NuGet - latest version of a package
+curl -s "https://api.nuget.org/v3-flatcontainer/<id-lowercase>/index.json"
+
+# npm - latest version of a package
+npm view @arc76/<name> version
+```
+
+Note the .NET packages above (`1.0.1.2026080317`) predate the fixes applied following this
+audit's first pass (see `audits/2026-08-03-audit-report.md`'s "Fixes applied" section) — the
+Critical/High/Medium code fixes are in source control but **not yet published**. Re-run this
+lookup after the next `dotnet/` publish to confirm the fixed version is actually live before
+treating those findings as closed in practice, not just in source.
+
 **Documentation**, insofar as it makes security- or entropy-relevant claims a user might rely
 on: root `README.md`, `dotnet/README.md`, `typescript/README.md`, every package README, both
 `AI_INTEGRATION.md` files (an AI assistant following stale/wrong guidance from these files

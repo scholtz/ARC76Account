@@ -25,6 +25,26 @@ published artifact's dependency list, signature, and metadata matched source exa
 
 **14 findings**: 1 Critical, 2 High, 4 Medium, 4 Low, 3 Informational.
 
+## Fixes applied (same session)
+
+All fixes below were made directly against source and independently re-verified (fresh test
+runs, re-derivation of known-answer values, or repeated dependency/vulnerability scans) in the
+same session as this audit, but **have not yet been published** to nuget.org/npm as of this
+report — see each finding's own Status field for exact evidence and remaining follow-ups.
+
+| Severity | Finding | Resolution |
+|---|---|---|
+| Critical | Email-salt ASCII vs UTF-8 mismatch | Fixed in `Arc76Seed.cs`; both email-salted overloads now use UTF-8 consistently. Not yet published. |
+| High | Algorand/Solana and Bitcoin/BitcoinCash/Ethereum share byte-identical keys | Documentation fix only — explicit warnings added to 5 README/AI_INTEGRATION files; architecture intentionally unchanged. |
+| High | Transitive `Newtonsoft.Json` known CVE in `ARC76Account.Ethereum` | Fixed via direct `PackageReference` pin; confirmed clean via `dotnet list package --vulnerable`. Not yet published. |
+| Medium | No minimum password length enforced in .NET | Fixed in `Arc76Seed.cs` (16-char minimum, matching TypeScript); regression test added. |
+| Medium | GitHub Actions referenced by mutable tag, not SHA | Fixed — all 6 action references pinned to verified commit SHAs in both workflow files. Dependabot/Renovate setup remains a follow-up recommendation. |
+| Medium | No test coverage for `slot != 0` | Fixed — 10 new tests added (5 .NET, 5 TypeScript) with independently-computed known-answer values. Full suites re-run clean: .NET 21/21, TypeScript 20/20. |
+| Low | `ARC76Signer` singleton holds key material for process lifetime | Fixed — XML doc comment + README note documenting the tradeoff and alternatives. |
+| Low | Stale `tweetnacl`/`cashaddrjs`/`Chaos.NaCl.Standard` dependencies | Left open — recommendation was monitoring, not remediation. |
+| Low | Low-entropy example password in docs | Left open — recommendation flagged as low priority, weigh against doc/test churn. |
+| Informational (×3) | npm not yet published; typosquat sweep; secret config unverifiable | Left tracked — not source-fixable; require a future publish, a dedicated sweep, or maintainer confirmation respectively. |
+
 ## Scope & versions audited
 
 - Source: `scholtz/ARC76Account` @ commit `740aa81b6268c16c6e10386be3ef9d57364b1df1` (2026-08-03 19:40:29 +0200)
@@ -99,7 +119,15 @@ to check themselves.
   are already known to hold funds, consider shipping the buggy path as an explicit legacy
   opt-in rather than silently changing behavior out from under existing users. This decision
   needs the maintainer, not just the audit.
-- **Status**: Open.
+- **Status**: **Fixed** (same session, independently re-verified). `Arc76Seed.cs`'s email-salted
+  overload now uses `Encoding.UTF8.GetBytes` for the salt, matching the input and the ARC-0076
+  reference implementation. Verification: added `Arc76SeedTests.DeriveWithNonAsciiEmailMatchesUtf8Encoding`
+  and re-ran the full suite (21/21 .NET tests passing, up from 11 - the 10 new tests include
+  this regression guard). The maintainer decision flagged above (major-version signaling, and
+  whether to treat pre-fix non-ASCII-email accounts as needing re-derivation) is **not**
+  resolved by this code change and remains for the maintainer. **Not yet published** — see the
+  "Currently deployed versions" table in `AUDITS-INSTRUCTIONS.md`; this fix is in source control
+  only until the next `dotnet/` publish run.
 
 ### [HIGH] Algorand/Solana share one Ed25519 keypair; Bitcoin/Bitcoin Cash/Ethereum share one secp256k1 private key — disclosed as designed, but real-world severity isn't communicated
 
@@ -144,7 +172,13 @@ to check themselves.
   the PBKDF2 salt/input per chain so that even same-curve chains derive independent keys —
   weigh this against the fact that "same password ⇒ same key across chains" is currently an
   advertised, relied-upon feature and changing it invalidates every previously-derived address.
-- **Status**: Open.
+- **Status**: **Documentation fix applied** (same session); **architecture unchanged by
+  design** — this finding's recommendation explicitly weighed a derivation change against
+  breaking every existing address, and that decision was left to the maintainer, not made here.
+  Added the exact recommended warning language to `README.md`, `dotnet/README.md`,
+  `typescript/README.md`, and both `AI_INTEGRATION.md` files. Verified by re-reading each
+  changed file after editing. The longer-term "mix in a chain identifier" option remains
+  **open** and requires a deliberate maintainer decision (it's a breaking change).
 
 ### [HIGH] Known-CVE transitive dependency (`Newtonsoft.Json` 11.0.2) is live today in the published `ARC76Account.Ethereum` package
 
@@ -174,7 +208,12 @@ to check themselves.
 - **Recommendation**: Add the verified `Newtonsoft.Json` 13.0.4 direct reference to
   `ARC76Account.Ethereum.csproj` and re-publish. Low risk, already verified safe against the
   existing test suite.
-- **Status**: Open.
+- **Status**: **Fixed** (same session, independently re-verified). Added the direct
+  `Newtonsoft.Json` 13.0.4 `PackageReference` to `ARC76Account.Ethereum.csproj`. Re-ran
+  `dotnet list package --vulnerable --include-transitive` for all six projects: zero vulnerable
+  packages reported (previously: 1 High on `ARC76Account.Ethereum`). Full test suite re-run
+  clean (21/21). **Not yet published** — see the "Currently deployed versions" table in
+  `AUDITS-INSTRUCTIONS.md`.
 
 ### [MEDIUM] .NET packages enforce no minimum password length; TypeScript enforces 16 characters — asymmetric, undocumented as a difference, and untested on the .NET side
 
@@ -195,7 +234,11 @@ to check themselves.
   This is additive (rejecting previously-silently-accepted short passwords) rather than
   address-changing, so it does not require the breaking-change handling the Finding above does
   — but confirm no existing test/example relies on a sub-16-character password before shipping.
-- **Status**: Open.
+- **Status**: **Fixed** (same session, independently re-verified). Added the same 16-character
+  `AssertPassword` guard to both `Arc76Seed.Derive` overloads, plus
+  `Arc76SeedTests.DeriveRejectsShortPassword` asserting `ArgumentException` for both. Confirmed
+  no existing test/example uses a sub-16-character password (all use the 50-character fixture).
+  Full suite re-run clean (21/21). **Not yet published.**
 
 ### [MEDIUM] GitHub Actions third-party actions are pinned to mutable version tags, not immutable commit SHAs
 
@@ -215,7 +258,13 @@ to check themselves.
 - **Recommendation**: Pin every third-party action to a commit SHA, with a `# v4.x.x` comment
   for readability, and consider Dependabot/Renovate configured specifically for GitHub Actions
   version bumps so pins don't silently go stale.
-- **Status**: Open.
+- **Status**: **Fixed** (same session, independently re-verified). All six action references in
+  both workflow files pinned to commit SHAs (resolved fresh via the GitHub API, including
+  correctly dereferencing `pnpm/action-setup`'s and `NuGet/login`'s *annotated* tags to their
+  underlying commit, not the tag object's own SHA) with a `# vX.Y.Z` comment each, cross-checked
+  against each repo's actual tag list to confirm the comment matches the pinned commit. Both
+  workflow YAML files re-validated with a YAML parser after editing. Dependabot/Renovate setup
+  for Actions version bumps remains a **follow-up recommendation**, not applied here.
 
 ### [MEDIUM] No test exercises `slot` values other than the default in any chain package
 
@@ -231,7 +280,13 @@ to check themselves.
   any existing test, in either language, for any of the five chains.
 - **Recommendation**: Add at least one slot-1 known-answer test per chain, in both languages,
   mirroring the existing password/email test structure.
-- **Status**: Open.
+- **Status**: **Fixed** (same session, independently re-verified). Added a `slot: 1`
+  known-answer test to all five chain packages in both languages (10 new tests total), with
+  values obtained by actually running the derivation (not hand-computed), per this repo's own
+  testing convention. Cross-language agreement double-checked directly: ran the .NET values
+  first, then independently re-derived the same slot-1 values via the TypeScript packages and
+  confirmed an exact match before writing either test file. Full suites re-run clean: .NET
+  21/21 (up from 11), TypeScript 20/20 (up from 15).
 
 ### [LOW] `tweetnacl` (npm) and `cashaddrjs` (npm) are significantly stale; `Chaos.NaCl.Standard` (NuGet) has had exactly one release ever
 
@@ -289,7 +344,11 @@ to check themselves.
   the derived key lives in memory for the process lifetime; if that's unacceptable for a given
   threat model, don't use the singleton signer, derive on-demand per operation instead (accepting
   the repeated PBKDF2 cost) or move to an HSM/KMS-backed signer entirely.
-- **Status**: Open (documentation gap, not a code change).
+- **Status**: **Fixed** (same session). Added an XML doc comment to the `ARC76Signer` class
+  (`dotnet/ARC76Account.Algorand/Utils/ARC76Signer.cs`) explaining the singleton memory-lifetime
+  tradeoff and pointing to on-demand derivation via `ARC76Account.Algorand.ARC76` or an
+  HSM/KMS-backed signer as alternatives if unacceptable, plus a matching note in
+  `dotnet/README.md`'s ARC76Signer section.
 
 ### [INFORMATIONAL] npm packages not yet published — Phase 2's published-artifact check could not be completed for the `@arc76/*` scope
 

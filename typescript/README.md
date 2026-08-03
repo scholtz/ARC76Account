@@ -53,6 +53,13 @@ Please use a password of at least 50 characters for real accounts — the accoun
 entirely the password's security. (Each package enforces a 16-character minimum in code; treat
 that as a hard floor, not a recommendation.)
 
+> ⚠️ **`@arc76/bitcoin`, `@arc76/bitcoincash`, and `@arc76/ethereum` derive the literal same
+> secp256k1 private key from the same password/email/slot** (not merely related keys — the
+> exact same 32 bytes). `@arc76/algorand` and `@arc76/solana` likewise derive the literal same
+> Ed25519 keypair. Leaking one chain's key leaks every other chain sharing its curve, with zero
+> extra attacker effort. See the [monorepo README](../README.md#shared-arc76-semantics) for the
+> full explanation. Use a different password/`slot` per chain if you need isolation.
+
 ## Cross-language compatibility
 
 Every package here derives the exact same key material as the equivalent `dotnet/` package for

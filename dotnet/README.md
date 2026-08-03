@@ -34,6 +34,13 @@ Please tell your users to use a password of at least 50 characters long for best
 this library derives the entire account/private key deterministically from that password, so
 its strength *is* the account's security.
 
+> ⚠️ **`ARC76Account.Bitcoin`, `.BitcoinCash`, and `.Ethereum` derive the literal same
+> secp256k1 private key from the same password/email/slot** (not merely related keys — the
+> exact same 32 bytes). `.Algorand` and `.Solana` likewise derive the literal same Ed25519
+> keypair. Leaking one chain's key leaks every other chain sharing its curve, with zero extra
+> attacker effort. See the [monorepo README](../README.md#shared-arc76-semantics) for the full
+> explanation. Use a different password/`slot` per chain if you need isolation.
+
 ## Supported chains
 
 | Chain              | Package                       | Namespace                  | Type returned                  |
@@ -199,6 +206,11 @@ var evm  = ARC76Account.Ethereum.ARC76.GetAccount(password);
 Ships in `ARC76Account.Algorand` (no separate package needed). Configure your web API project
 with an ARC76 signer configuration, and the signer will sign Algorand transactions whenever
 required, without ever holding the raw password in your own code.
+
+Registered as a singleton (see below), the derived private key lives in process memory for the
+whole application lifetime — the same exposure as any other long-lived in-memory secret. If
+that doesn't fit your threat model, derive an account on-demand per operation via
+`ARC76Account.Algorand.ARC76` instead, or use an HSM/KMS-backed signer.
 
 `appsettings.json`:
 ```json

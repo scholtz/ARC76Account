@@ -5,6 +5,17 @@ using Microsoft.Extensions.Options;
 
 namespace ARC76Account.Utils
 {
+    /// <summary>
+    /// Signs Algorand transactions with a password-derived ARC76 account. Intended for
+    /// <c>AddSingleton</c> registration (see the package README) - which means the derived
+    /// private key material lives in process memory for the entire application lifetime, not
+    /// zeroed/cleared between uses. This is the same exposure as holding any other long-lived
+    /// secret/API key in memory, and is an explicit tradeoff of the singleton pattern this
+    /// class is designed for. If that's unacceptable for your threat model (e.g. you need
+    /// HSM/KMS-backed signing, or want to minimize the key's in-memory lifetime), derive an
+    /// account on-demand per operation via <see cref="ARC76Account.Algorand.ARC76"/> instead of
+    /// using this singleton signer, or use an HSM/KMS-backed signer entirely.
+    /// </summary>
     public class ARC76Signer : IAlgorandSigner
     {
         private readonly Account k;

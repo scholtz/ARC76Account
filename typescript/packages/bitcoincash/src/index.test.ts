@@ -20,6 +20,16 @@ describe("getAccount", () => {
     );
     expect(account.toWIF()).toBe("L2AEXy6SztUrAa6bMZLyamdbF6xdALS6pUWBct6JKRLz9xDsm57Z");
   });
+
+  // Regression test for a slot!=0 known-answer value - see audits/2026-08-03-audit-report.md
+  // (Medium finding: no test previously exercised any slot other than the default).
+  it("matches the known slot-1 address and WIF", async () => {
+    const account = await getAccount(PASSWORD, 1);
+    expect(addressOf(account.publicKey)).toBe(
+      "bitcoincash:qpllmp6d3d9ewjya3s5s08ssvmnhdr7heuv0dvkuds"
+    );
+    expect(account.toWIF()).toBe("KykJVUYMpC2xCrUb8dENcRP3cvQHt6BQCskrkJvyW7fvGEVxpgWA");
+  });
 });
 
 describe("getEmailAccount", () => {
