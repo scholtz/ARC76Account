@@ -24,3 +24,8 @@ Both functions return an `ethers.Wallet` (`ethers` v6) — use `.address` and `.
 
 Please use a password of at least 50 characters for real accounts — the account's security is
 entirely the password's security.
+
+> ⚠️ **Same-curve chains share the literal same private key.** `@arc76/bitcoin`,
+> `@arc76/bitcoincash`, and `@arc76/ethereum` derive the **identical secp256k1 private key**
+> from the same password/email/slot — leaking the key on one of those chains leaks it on all of
+> them. Use a different password (or `slot`) per chain if you need isolation.

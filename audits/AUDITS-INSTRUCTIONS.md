@@ -73,18 +73,18 @@ whatever's merely committed to `master`.
 
 | Package                    | Registry | Latest deployed    | Last checked |
 |-----------------------------|----------|---------------------|--------------|
-| `ARC76Account.Core`         | NuGet    | `1.0.1.2026080317`  | 2026-08-03   |
-| `ARC76Account.Algorand`     | NuGet    | `1.0.1.2026080317`  | 2026-08-03   |
-| `ARC76Account.Ethereum`     | NuGet    | `1.0.1.2026080317`  | 2026-08-03   |
-| `ARC76Account.Bitcoin`      | NuGet    | `1.0.1.2026080317`  | 2026-08-03   |
-| `ARC76Account.BitcoinCash`  | NuGet    | `1.0.1.2026080317`  | 2026-08-03   |
-| `ARC76Account.Solana`       | NuGet    | `1.0.1.2026080317`  | 2026-08-03   |
-| `@arc76/core`                | npm      | *not published yet* | 2026-08-03   |
-| `@arc76/algorand`            | npm      | *not published yet* | 2026-08-03   |
-| `@arc76/ethereum`            | npm      | *not published yet* | 2026-08-03   |
-| `@arc76/bitcoin`             | npm      | *not published yet* | 2026-08-03   |
-| `@arc76/bitcoincash`         | npm      | *not published yet* | 2026-08-03   |
-| `@arc76/solana`              | npm      | *not published yet* | 2026-08-03   |
+| `ARC76Account.Core`         | NuGet    | `1.0.2.2026080318`  | 2026-08-03 (audit #2) |
+| `ARC76Account.Algorand`     | NuGet    | `1.0.2.2026080318`  | 2026-08-03 (audit #2) |
+| `ARC76Account.Ethereum`     | NuGet    | `1.0.2.2026080318`  | 2026-08-03 (audit #2) |
+| `ARC76Account.Bitcoin`      | NuGet    | `1.0.1.2026080317`  | 2026-08-03 (audit #2) |
+| `ARC76Account.BitcoinCash`  | NuGet    | `1.0.1.2026080317`  | 2026-08-03 (audit #2) |
+| `ARC76Account.Solana`       | NuGet    | `1.0.1.2026080317`  | 2026-08-03 (audit #2) |
+| `@arc76/core`                | npm      | *not published* — see note | 2026-08-03 (audit #2) |
+| `@arc76/algorand`            | npm      | `1.0.32026080318`   | 2026-08-03 (audit #2) |
+| `@arc76/ethereum`            | npm      | `1.0.32026080318`   | 2026-08-03 (audit #2) |
+| `@arc76/bitcoin`             | npm      | `1.0.32026080318`   | 2026-08-03 (audit #2) |
+| `@arc76/bitcoincash`         | npm      | `1.0.32026080318`   | 2026-08-03 (audit #2) |
+| `@arc76/solana`              | npm      | `1.0.32026080318`   | 2026-08-03 (audit #2) |
 
 Lookup commands (also in Phase 2 below):
 ```bash
@@ -95,11 +95,17 @@ curl -s "https://api.nuget.org/v3-flatcontainer/<id-lowercase>/index.json"
 npm view @arc76/<name> version
 ```
 
-Note the .NET packages above (`1.0.1.2026080317`) predate the fixes applied following this
-audit's first pass (see `audits/2026-08-03-audit-report.md`'s "Fixes applied" section) — the
-Critical/High/Medium code fixes are in source control but **not yet published**. Re-run this
-lookup after the next `dotnet/` publish to confirm the fixed version is actually live before
-treating those findings as closed in practice, not just in source.
+Notes as of 2026-08-03 audit #2 (`audits/2026-08-03-audit-report-2.md`):
+- NuGet `1.0.2.2026080318` (Core/Algorand/Ethereum) contains the audit #1 fixes, verified live
+  by running the shipped DLL. **But** `Bitcoin`/`BitcoinCash`/`Solana` are still `1.0.1` and
+  their nuspec dependency floor pins Core `1.0.1.2026080317` — NuGet's lowest-wins resolution
+  means a fresh install of those three still pulls the **pre-fix, vulnerable Core**. A full
+  republish (e.g. `workflow_dispatch` on `publish-nuget.yml`) is needed.
+- The five published `@arc76/*` npm packages are **uninstallable**: they depend on
+  `@arc76/core@^1.0.0`, which was never published (per-package change detection skipped it).
+  `npm install` of any of them 404s. A full republish (`workflow_dispatch` on
+  `publish-npm.yml`) is needed. Their `1.0.32026080318` version string comes from the
+  pre-`bb4bb45` versioning scheme; the next publish will use `1.{run}.{yyyyMMddHH}`.
 
 **Documentation**, insofar as it makes security- or entropy-relevant claims a user might rely
 on: root `README.md`, `dotnet/README.md`, `typescript/README.md`, every package README, both
@@ -189,6 +195,16 @@ this repository, without changing a single line here.
   - Package metadata (author, repository URL, license) matches expectations (`scholtz`,
     `https://github.com/scholtz/ARC76Account`, MIT) — a takeover or typosquat would often show
     up here first.
+- **Dependency-resolution check for dependents** (added after audit #2 found both halves of
+  this failing): for every published chain package, confirm (a) every dependency its published
+  metadata declares actually **exists** on the registry at an installable version (npm's
+  first `@arc76/*` publish shipped dependents whose `@arc76/core` dependency didn't exist —
+  every install 404'd), and (b) the dependency **version floor actually resolves to a version
+  containing the latest security fixes** — NuGet resolves the *lowest* version satisfying a
+  range, so a chain package whose nuspec pins `Core >= <pre-fix version>` keeps installing the
+  vulnerable Core even after a fixed Core is published. Verify by performing a real, fresh
+  `dotnet add package` / `npm install` of each chain package and listing the transitively
+  resolved core version — not by reading ranges alone.
 - Check npmjs.com/nuget.org for any **other**, similarly-named package that could plausibly be
   typosquatted against this project (e.g. `arc-76`, `arc76js`, `ARC76Account.Core` vs a
   lookalike) and note it as an informational finding if found, since users could be tricked

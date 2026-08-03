@@ -27,3 +27,9 @@ const emailSeed = await deriveSeedWithEmail(email, password); // slot 0
 
 Password must be at least 16 characters (throws otherwise) — production passwords should be
 much longer (≥ 50 characters recommended).
+
+> ⚠️ **Same-curve chains share the literal same key material.** From the same
+> password/email/slot, `@arc76/bitcoin`/`@arc76/bitcoincash`/`@arc76/ethereum` derive the
+> identical secp256k1 private key, and `@arc76/algorand`/`@arc76/solana` derive the identical
+> Ed25519 keypair — leaking one chain's key leaks every other chain sharing its curve. Use a
+> different password (or `slot`) per chain if you need isolation.

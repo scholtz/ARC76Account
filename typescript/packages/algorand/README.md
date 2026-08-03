@@ -28,3 +28,8 @@ Both functions return an `algosdk.Account` (`{ addr, sk }`).
 
 Please use a password of at least 50 characters for real accounts — the account's security is
 entirely the password's security.
+
+> ⚠️ **Same-curve chains share the literal same keypair.** `@arc76/algorand` and
+> `@arc76/solana` derive the **identical Ed25519 keypair** from the same password/email/slot —
+> leaking the key on one of those chains leaks it on the other. Use a different password (or
+> `slot`) per chain if you need isolation.
