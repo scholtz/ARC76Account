@@ -13,8 +13,8 @@ top-level folder, independently versioned and published:
   (`ARC76Account.Algorand`, `.Ethereum`, `.Bitcoin`, `.BitcoinCash`, `.Solana`). See
   [`dotnet/AGENTS.md`](dotnet/AGENTS.md).
 - **`typescript/`** — TypeScript/JS, a pnpm workspace publishing one npm package per chain
-  (`arc76-core` + `arc76-algorand`, `.ethereum`, `.bitcoin`, `.bitcoincash` — no Solana package
-  yet), mirroring `dotnet/`'s architecture. See [`typescript/AGENTS.md`](typescript/AGENTS.md).
+  (`arc76-core` + `arc76-algorand`, `.ethereum`, `.bitcoin`, `.bitcoincash`, `.solana`),
+  mirroring `dotnet/`'s architecture. See [`typescript/AGENTS.md`](typescript/AGENTS.md).
 - **`python/`** — reserved for a future PyPI package. Not implemented yet — no AGENTS.md there
   until there's something to document.
 
@@ -63,8 +63,10 @@ No CI workflow exists yet (no `.github/workflows`). No root `.editorconfig`.
   separately on GitHub).
 - Immediately after: `typescript/` was itself split from the single `arc76` package into a
   pnpm workspace with one package per chain (`arc76-core` + `arc76-algorand`/`.ethereum`/
-  `.bitcoin`/`.bitcoincash`), mirroring `dotnet/`'s per-chain package architecture, and switched
-  from npm to pnpm as its package manager.
+  `.bitcoin`/`.bitcoincash`/`.solana`), mirroring `dotnet/`'s per-chain package architecture,
+  and switched from npm to pnpm as its package manager.
+- A professional "network of chains" logo (`assets/arc76-logo-512.png`) was created and wired
+  into every NuGet package's `PackageIcon` and every npm package's README.
 
 All of this is documented in `dotnet/README.md`'s migration guides and should not be
 repeated/reverted without a clear reason.

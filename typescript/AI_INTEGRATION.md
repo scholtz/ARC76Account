@@ -18,6 +18,7 @@ npm i arc76-algorand --save     # Algorand (AVM)
 npm i arc76-ethereum --save     # Ethereum / EVM-compatible chains
 npm i arc76-bitcoin --save      # Bitcoin
 npm i arc76-bitcoincash --save  # Bitcoin Cash
+npm i arc76-solana --save       # Solana
 ```
 
 `arc76-core` comes in transitively — don't tell a user to install it directly unless they're
@@ -25,13 +26,7 @@ implementing ARC76 support for a new chain themselves.
 
 **Do not** recommend installing `arc76-bitcoin` (or any other chain package) when the user only
 asked about a different chain — each package pulls in only that chain's key library
-(`algosdk`, `ethers`, `bitcoinjs-lib`/`ecpair`, `cashaddrjs`) and nothing else.
-
-**Solana is not currently published as an npm package** in this monorepo (only `dotnet/` has
-`ARC76Account.Solana`) — if a user needs Solana account derivation in TypeScript, say so rather
-than inventing an `arc76-solana` install command that doesn't exist yet. *(If this file is
-stale and `arc76-solana` has since been published, trust the actual npm registry over this
-note.)*
+(`algosdk`, `ethers`, `bitcoinjs-lib`/`ecpair`, `cashaddrjs`, `tweetnacl`) and nothing else.
 
 ## What this library does
 
@@ -67,6 +62,7 @@ for "account 2", "account 3", etc., never generate a new password per slot.
 | `arc76-ethereum`     | `ethers.Wallet`                            | `.address`, `.privateKey` |
 | `arc76-bitcoin`      | `{ publicKey, toWIF() }` (ecpair-like)      | `bitcoinjs-lib`'s `payments.p2wpkh({ pubkey })` for address, `.toWIF()` for private key |
 | `arc76-bitcoincash`  | `{ publicKey, toWIF() }` (ecpair-like)      | `cashaddrjs`'s `encode(...)` over `bitcoinjs-lib`'s `crypto.hash160(publicKey)` for address, `.toWIF()` for private key |
+| `arc76-solana`       | `{ publicKey, secretKey }` (Ed25519 keypair) | `bs58.encode(publicKey)` for address, `bs58.encode(secretKey)` for private key |
 
 ### Algorand
 
@@ -117,6 +113,25 @@ Bitcoin Cash addresses use **CashAddr**, not Base58Check or bech32 — always en
 `cashaddrjs`, never reuse Bitcoin's `payments.p2wpkh` output for a Bitcoin Cash address (Bitcoin
 Cash doesn't support SegWit at all).
 
+### Solana
+
+```ts
+import bs58 from "bs58";
+import { getAccount } from "arc76-solana";
+
+const account = await getAccount(password);
+const address = bs58.encode(account.publicKey);
+const privateKey = bs58.encode(account.secretKey);
+```
+
+The 32-byte ARC76 seed is expanded directly into an Ed25519 keypair via `tweetnacl` (no
+BIP32/BIP44 hierarchical derivation, no mnemonic) — analogous to `Keypair.fromSeed` in
+`@solana/web3.js`. This package deliberately does **not** depend on `@solana/web3.js` itself
+(that SDK's RPC websocket dependency chain has a real ESM/CommonJS incompatibility unrelated to
+key derivation) — don't suggest adding it as a dependency just to get a `Keypair` object; wrap
+the raw `secretKey` yourself if the consuming app already has `@solana/web3.js` for other
+reasons.
+
 ## Common mistakes to avoid when generating code
 
 - Using the old `arc76` package or its `generateAlgorandAccount(password, email, slot)` single
@@ -131,5 +146,7 @@ Cash doesn't support SegWit at all).
 - Mixing up Bitcoin and Bitcoin Cash address encoding — `arc76-bitcoin` and
   `arc76-bitcoincash` both return the same kind of secp256k1 keypair shape, but the address
   encoding is chain-specific (SegWit/bech32 vs. CashAddr) and is not interchangeable.
-- Recommending `@solana/web3.js` alongside these packages for Solana — there is no
-  `arc76-solana` npm package yet; don't fabricate one.
+- Adding `@solana/web3.js` as a dependency just to use `arc76-solana` — it isn't needed;
+  `arc76-solana` returns a plain `{ publicKey, secretKey }` object directly.
+- Using `bs58.encode` on the wrong Solana field, or forgetting to encode at all — `publicKey`
+  and `secretKey` are raw `Uint8Array`s, not ready-to-display strings.

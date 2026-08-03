@@ -1,5 +1,7 @@
 # ARC76 Account (TypeScript)
 
+<p align="center"><img src="../assets/arc76-logo-512.png" alt="ARC76 Account" width="180"></p>
+
 > Part of the [ARC76 Account monorepo](../README.md), which also has a
 > [.NET implementation](../dotnet/README.md).
 
@@ -20,6 +22,7 @@ npm independently.
 | Ethereum / EVM     | [`arc76-ethereum`](packages/ethereum/README.md)     | `ethers` v6              |
 | Bitcoin            | [`arc76-bitcoin`](packages/bitcoin/README.md)       | `bitcoinjs-lib` + `ecpair` |
 | Bitcoin Cash       | [`arc76-bitcoincash`](packages/bitcoincash/README.md) | `bitcoinjs-lib` + `ecpair` + `cashaddrjs` |
+| Solana             | [`arc76-solana`](packages/solana/README.md)         | `tweetnacl` + `bs58` |
 | —                  | [`arc76-core`](packages/core/README.md) (shared seed derivation, not usually installed directly) | — |
 
 Every chain package exposes the same shape:
@@ -40,6 +43,7 @@ npm i arc76-algorand --save     # Algorand (AVM)
 npm i arc76-ethereum --save     # Ethereum / EVM-compatible chains
 npm i arc76-bitcoin --save      # Bitcoin
 npm i arc76-bitcoincash --save  # Bitcoin Cash
+npm i arc76-solana --save       # Solana
 ```
 
 Install only the chain package(s) you need — `arc76-core` (the shared PBKDF2 seed derivation)

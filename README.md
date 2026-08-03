@@ -1,5 +1,7 @@
 # ARC76 Account
 
+<p align="center"><img src="assets/arc76-logo-512.png" alt="ARC76 Account" width="220"></p>
+
 Multi-language implementations of the
 [Algorand ARC76 Account Standard](https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md):
 deterministic, password-derived blockchain accounts (optionally salted with an email).
@@ -10,7 +12,7 @@ and published, and has its own detailed README:
 | Language   | Folder                        | Published as                                                                 | Status      |
 |------------|--------------------------------|-------------------------------------------------------------------------------|-------------|
 | .NET       | [`dotnet/`](dotnet/README.md)         | NuGet: `ARC76Account.Algorand`, `.Ethereum`, `.Bitcoin`, `.BitcoinCash`, `.Solana`, `.Core` | Available   |
-| TypeScript | [`typescript/`](typescript/README.md) | npm: `arc76-algorand`, `arc76-ethereum`, `arc76-bitcoin`, `arc76-bitcoincash`, `arc76-core` | Available (no Solana yet) |
+| TypeScript | [`typescript/`](typescript/README.md) | npm: `arc76-algorand`, `arc76-ethereum`, `arc76-bitcoin`, `arc76-bitcoincash`, `arc76-solana`, `arc76-core` | Available   |
 | Python     | [`python/`](python/README.md)         | PyPI (planned)                                                                | Not yet implemented |
 
 ## Which folder do I want?
@@ -18,8 +20,8 @@ and published, and has its own detailed README:
 - Building a .NET/C# app? → [`dotnet/README.md`](dotnet/README.md) — supports Algorand,
   Ethereum/EVM, Bitcoin, Bitcoin Cash, and Solana, one NuGet package per chain.
 - Building a JS/TS app (browser or Node)? → [`typescript/README.md`](typescript/README.md) —
-  supports Algorand, Ethereum/EVM, Bitcoin, and Bitcoin Cash (no Solana package yet), one npm
-  package per chain, managed as a pnpm workspace.
+  supports Algorand, Ethereum/EVM, Bitcoin, Bitcoin Cash, and Solana, one npm package per chain,
+  managed as a pnpm workspace.
 - Python isn't available yet — see [`python/README.md`](python/README.md).
 
 ## Shared ARC76 semantics

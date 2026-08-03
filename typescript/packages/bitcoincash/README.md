@@ -1,5 +1,7 @@
 # arc76-bitcoincash
 
+<p align="center"><img src="../../../assets/arc76-logo-512.png" alt="ARC76 Account" width="140"></p>
+
 Deterministic [ARC76](https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md)
 account derivation for **Bitcoin Cash**.
 
