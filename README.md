@@ -26,6 +26,7 @@ its strength *is* the account's security.
 | Algorand (AVM)     | `ARC76Account.Algorand`   | `Algorand.Algod.Model.Account`     |
 | Ethereum / EVM     | `ARC76Account.Ethereum`   | `Nethereum.Signer.EthECKey`        |
 | Bitcoin            | `ARC76Account.Bitcoin`    | `NBitcoin.Key`                     |
+| Bitcoin Cash       | `ARC76Account.BitcoinCash`| `NBitcoin.Key`                     |
 
 Every chain namespace exposes the same shape:
 
@@ -106,6 +107,37 @@ NBitcoin.Key key = ARC76Account.Bitcoin.ARC76.GetEmailAccount(
     "12345678901234567890123456789012345678901234567890");
 string address = key.PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.Main).ToString();
 Assert.That(address, Is.EqualTo("bc1qwjwpxtglzrv06ndfrqs2uegtmamg8qdzy3mghk"));
+```
+
+### Bitcoin Cash account from a password
+
+Returns an `NBitcoin.Key` (Bitcoin Cash uses the same secp256k1 keys as Bitcoin — only the
+address format and network parameters differ). The address uses **CashAddr**
+(`bitcoincash:q...`), the standard Bitcoin Cash address format since the network-wide 2018
+CashAddr migration. Bitcoin Cash does not support SegWit, so `ScriptPubKeyType.Legacy` here just
+means "the chain's only P2PKH type", not a deprecated format:
+
+```c#
+using NBitcoin;
+using NBitcoin.Altcoins;
+
+NBitcoin.Key key = ARC76Account.BitcoinCash.ARC76.GetAccount(
+    "12345678901234567890123456789012345678901234567890");
+var network = BCash.Instance.Mainnet;
+string address = key.PubKey.GetAddress(ScriptPubKeyType.Legacy, network).ToString();
+string privateKeyWif = key.GetWif(network).ToString();
+Assert.That(address, Is.EqualTo("bitcoincash:qr34393e7nat5476magek26aul9q3w3lxc4hph4ljz"));
+Assert.That(privateKeyWif, Is.EqualTo("L2AEXy6SztUrAa6bMZLyamdbF6xdALS6pUWBct6JKRLz9xDsm57Z"));
+```
+
+### Bitcoin Cash account from an email + password
+
+```c#
+NBitcoin.Key key = ARC76Account.BitcoinCash.ARC76.GetEmailAccount(
+    "email@example.com",
+    "12345678901234567890123456789012345678901234567890");
+string address = key.PubKey.GetAddress(ScriptPubKeyType.Legacy, NBitcoin.Altcoins.BCash.Instance.Mainnet).ToString();
+Assert.That(address, Is.EqualTo("bitcoincash:qp6fcyedrugd3l2d4yvzptn9p00hdqup5g7zx5pytw"));
 ```
 
 ### Same password, two chains
