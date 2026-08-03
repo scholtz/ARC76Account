@@ -40,7 +40,7 @@ dotnet build
 dotnet test
 ```
 
-Both projects target `net8.0`. Run the full test suite before considering any change to
+Both projects target `net10.0`. Run the full test suite before considering any change to
 `ARC76.cs` complete — the AVM/EVM tests are known-answer tests, so a passing suite is strong
 evidence the derivation logic is unchanged/correct.
 

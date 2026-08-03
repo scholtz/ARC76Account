@@ -18,7 +18,7 @@
 		<Authors>Ludovit Scholtz</Authors>
 		<PackageId>AlgorandARC76Account</PackageId>
 		<Version>1.1.0</Version>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
