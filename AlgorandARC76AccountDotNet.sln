@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33712.159
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlgorandARC76AccountDotNet", "AlgorandARC76AccountDotNet\AlgorandARC76AccountDotNet.csproj", "{DB78DA91-E524-48B4-8507-78F8DDFBF01E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ARC76Account", "ARC76Account\ARC76Account.csproj", "{DB78DA91-E524-48B4-8507-78F8DDFBF01E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestARC76", "TestARC76\TestARC76.csproj", "{26232B66-97A8-4879-B15A-EB3FC412D00C}"
 EndProject

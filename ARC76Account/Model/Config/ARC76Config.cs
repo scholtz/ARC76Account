@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AlgorandARC76AccountDotNet.Model.Config
+namespace ARC76Account.Model.Config
 {
     /// <summary>
     /// Class for config parsing for usage in Signer : IOptionsMonitor<ARC76Config> 

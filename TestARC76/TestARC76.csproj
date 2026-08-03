@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AlgorandARC76AccountDotNet\AlgorandARC76AccountDotNet.csproj" />
+    <ProjectReference Include="..\ARC76Account\ARC76Account.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,20 +4,20 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Title>Algorand ARC76 Account, EVM support</Title>
+		<Title>ARC76 Account - multi-chain deterministic account derivation</Title>
 		<Company>Scholtz&amp;Co</Company>
-		<Description>This library enables ARC76 account</Description>
+		<Description>Deterministic ARC76 account derivation for Algorand and EVM-compatible chains, with a pluggable per-chain namespace architecture for adding new chains.</Description>
 		<Copyright>Scholtz</Copyright>
 		<PackageProjectUrl>https://github.com/scholtz/AlgorandARC76AccountDotNet</PackageProjectUrl>
 		<PackageIcon>algorand-algo-logo-whtbck-512.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/scholtz/AlgorandARC76AccountDotNet</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<PackageTags>Algorand;ARC76;Account generation</PackageTags>
+		<PackageTags>Algorand;Ethereum;EVM;ARC76;Account generation</PackageTags>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<Authors>Ludovit Scholtz</Authors>
-		<PackageId>AlgorandARC76Account</PackageId>
-		<Version>1.1.0</Version>
+		<PackageId>ARC76Account</PackageId>
+		<Version>2.0.0</Version>
 		<TargetFramework>net10.0</TargetFramework>
 	</PropertyGroup>
 

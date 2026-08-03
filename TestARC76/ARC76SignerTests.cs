@@ -1,6 +1,6 @@
-﻿using Algorand.Algod.Model.Transactions;
+using Algorand.Algod.Model.Transactions;
 using Algorand;
-using AlgorandARC76AccountDotNet.Utils;
+using ARC76Account.Utils;
 using Microsoft.Extensions.Options;
 using Moq;
 using System;
@@ -18,8 +18,8 @@ namespace TestARC76
         [SetUp]
         public void Setup()
         {
-            var options = GetOptionsMonitor(new AlgorandARC76AccountDotNet.Model.Config.ARC76Config("12345678901234567890123456789012345678901234567890"));
-            account = AlgorandARC76AccountDotNet.ARC76.GetAccount("12345678901234567890123456789012345678901234567890");
+            var options = GetOptionsMonitor(new ARC76Account.Model.Config.ARC76Config("12345678901234567890123456789012345678901234567890"));
+            account = ARC76Account.Algorand.ARC76.GetAccount("12345678901234567890123456789012345678901234567890");
             signer = new ARC76Signer(options);
         }
 
@@ -28,9 +28,9 @@ namespace TestARC76
         {
             account.Dispose();
         }
-        private IOptionsMonitor<AlgorandARC76AccountDotNet.Model.Config.ARC76Config> GetOptionsMonitor(AlgorandARC76AccountDotNet.Model.Config.ARC76Config appConfig)
+        private IOptionsMonitor<ARC76Account.Model.Config.ARC76Config> GetOptionsMonitor(ARC76Account.Model.Config.ARC76Config appConfig)
         {
-            var optionsMonitorMock = new Mock<IOptionsMonitor<AlgorandARC76AccountDotNet.Model.Config.ARC76Config>>();
+            var optionsMonitorMock = new Mock<IOptionsMonitor<ARC76Account.Model.Config.ARC76Config>>();
             optionsMonitorMock.Setup(o => o.CurrentValue).Returns(appConfig);
             return optionsMonitorMock.Object;
         }

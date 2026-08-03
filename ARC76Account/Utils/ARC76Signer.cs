@@ -1,9 +1,9 @@
-﻿using Algorand.Algod.Model;
+using Algorand.Algod.Model;
 using Algorand.Algod.Model.Transactions;
-using AlgorandARC76AccountDotNet.Model.Config;
+using ARC76Account.Model.Config;
 using Microsoft.Extensions.Options;
 
-namespace AlgorandARC76AccountDotNet.Utils
+namespace ARC76Account.Utils
 {
     public class ARC76Signer : IAlgorandSigner
     {
@@ -13,16 +13,16 @@ namespace AlgorandARC76AccountDotNet.Utils
         /// </summary>
         /// <param name="arc76Config"></param>
         /// <exception cref="Exception"></exception>
-        public ARC76Signer(IOptionsMonitor<AlgorandARC76AccountDotNet.Model.Config.ARC76Config> arc76Config)
+        public ARC76Signer(IOptionsMonitor<ARC76Config> arc76Config)
         {
             if (string.IsNullOrEmpty(arc76Config.CurrentValue.Data))
             {
                 throw new Exception("Please configure ARC76:Data");
             }
-            k = ARC76.GetAccount(arc76Config.CurrentValue.Data);
+            k = Algorand.ARC76.GetAccount(arc76Config.CurrentValue.Data);
         }
 
-        public Algorand.Address getAddress()
+        public global::Algorand.Address getAddress()
         {
             return k.Address;
         }
