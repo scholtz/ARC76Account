@@ -22,7 +22,7 @@
 
   <ItemGroup Condition="'$(IsPackable)' != 'false'">
     <None Include="$(MSBuildThisFileDirectory)algorand-algo-logo-whtbck-512.png" Pack="True" PackagePath="\" />
-    <None Include="$(MSBuildThisFileDirectory)LICENSE.txt" Pack="True" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)..\LICENSE.txt" Pack="True" PackagePath="\" />
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="True" PackagePath="\" />
   </ItemGroup>
 
