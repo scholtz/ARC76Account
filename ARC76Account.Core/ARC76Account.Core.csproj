@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Title>ARC76 Account - Core</Title>
+		<Description>Shared ARC76 (PBKDF2-HMAC-SHA256) seed derivation used by the per-chain ARC76Account.* packages (Algorand, Ethereum, Bitcoin, Bitcoin Cash, ...). Only needed directly if you're adding support for a new chain.</Description>
+		<PackageTags>ARC76;Account generation</PackageTags>
+		<PackageId>ARC76Account.Core</PackageId>
+	</PropertyGroup>
+
+</Project>

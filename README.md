@@ -1,19 +1,30 @@
 # ARC76 Account
 
 .NET implementation of the [Algorand ARC76 Account Standard](https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md):
-deterministic, password-derived accounts, with one namespace per supported chain so new
-chains can be added without touching existing ones.
+deterministic, password-derived accounts, with one NuGet package and one namespace per
+supported chain, so you only pull in the SDK/dependencies for the chains you actually use.
 
-[Nuget link](https://www.nuget.org/packages/ARC76Account)
-
-> Looking for the pre-2.0 `AlgorandARC76Account` package / `AlgorandARC76AccountDotNet`
-> namespace? See the [Migration guide](#migration-guide-v1x--v20) below.
+> Looking for the old, single `ARC76Account` package (v2.x, one assembly for every chain) or
+> the pre-2.0 `AlgorandARC76Account` package / `AlgorandARC76AccountDotNet` namespace?
+> See the [Migration guides](#migration-guides) below.
 
 ## Install
 
+Each chain is its own package with its own dependencies — install only what you need:
+
 ```
-dotnet add package ARC76Account
+dotnet add package ARC76Account.Algorand    # Algorand (AVM)
+dotnet add package ARC76Account.Ethereum    # Ethereum / EVM-compatible chains
+dotnet add package ARC76Account.Bitcoin     # Bitcoin
+dotnet add package ARC76Account.BitcoinCash # Bitcoin Cash
 ```
+
+`ARC76Account.Core` (the shared PBKDF2 seed derivation, no chain SDK dependencies) is pulled in
+automatically by each of the above — install it directly only if you're implementing a new
+chain yourself (see [Adding a new chain](#adding-a-new-chain)).
+
+Installing `ARC76Account.Bitcoin` will not pull in `Algorand4`, `Nethereum.Signer`, or
+`NBitcoin.Altcoins` — each package only depends on what its own chain needs.
 
 Please tell your users to use a password of at least 50 characters long for best safety —
 this library derives the entire account/private key deterministically from that password, so
@@ -21,12 +32,12 @@ its strength *is* the account's security.
 
 ## Supported chains
 
-| Chain             | Namespace                | Type returned                     |
-|-------------------|---------------------------|------------------------------------|
-| Algorand (AVM)     | `ARC76Account.Algorand`   | `Algorand.Algod.Model.Account`     |
-| Ethereum / EVM     | `ARC76Account.Ethereum`   | `Nethereum.Signer.EthECKey`        |
-| Bitcoin            | `ARC76Account.Bitcoin`    | `NBitcoin.Key`                     |
-| Bitcoin Cash       | `ARC76Account.BitcoinCash`| `NBitcoin.Key`                     |
+| Chain              | Package                       | Namespace                  | Type returned                  |
+|--------------------|--------------------------------|------------------------------|-----------------------------------|
+| Algorand (AVM)     | `ARC76Account.Algorand`        | `ARC76Account.Algorand`     | `Algorand.Algod.Model.Account`     |
+| Ethereum / EVM     | `ARC76Account.Ethereum`        | `ARC76Account.Ethereum`     | `Nethereum.Signer.EthECKey`        |
+| Bitcoin            | `ARC76Account.Bitcoin`         | `ARC76Account.Bitcoin`      | `NBitcoin.Key`                     |
+| Bitcoin Cash       | `ARC76Account.BitcoinCash`     | `ARC76Account.BitcoinCash`  | `NBitcoin.Key`                     |
 
 Every chain namespace exposes the same shape:
 
@@ -154,8 +165,9 @@ var evm  = ARC76Account.Ethereum.ARC76.GetAccount(password);
 
 ## ARC76Signer — ASP.NET Core transaction signer
 
-Configure your web API project with an ARC76 signer configuration, and the signer will sign
-Algorand transactions whenever required, without ever holding the raw password in your own code.
+Ships in `ARC76Account.Algorand` (no separate package needed). Configure your web API project
+with an ARC76 signer configuration, and the signer will sign Algorand transactions whenever
+required, without ever holding the raw password in your own code.
 
 `appsettings.json`:
 ```json
@@ -200,14 +212,36 @@ builder.Services.AddSingleton<ARC76Account.Utils.IAlgorandSigner, ARC76Account.U
 
 ## Adding a new chain
 
-The library is organized as one namespace per chain (`ARC76Account.Algorand`,
-`ARC76Account.Ethereum`, ...), each exposing a static `ARC76` class with `GetAccount` /
-`GetEmailAccount`. All chains share the same seed derivation
-(`ARC76Account.Core.Arc76Seed`, internal), so adding chain support means adding one new
-namespace/class pair, not touching the others. See the `add-chain-support` Claude Code skill
-in this repo (`.claude/skills/add-chain-support/SKILL.md`) for the step-by-step process.
+The repo is organized as one **project/package** per chain (`ARC76Account.Algorand`,
+`ARC76Account.Ethereum`, `ARC76Account.Bitcoin`, `ARC76Account.BitcoinCash`, ...), each with a
+matching namespace and a static `ARC76` class exposing `GetAccount` / `GetEmailAccount`. All
+chains reference `ARC76Account.Core` and call its public `Arc76Seed.Derive(...)` for the
+shared PBKDF2 seed — that project has no chain SDK dependencies of its own. Adding a new chain
+means adding one new project (folder + `.csproj` + `ARC76.cs`), not touching the others' code
+or dependencies. See the `add-chain-support` Claude Code skill in this repo
+(`.claude/skills/add-chain-support/SKILL.md`) for the step-by-step process.
 
-## Migration guide (v1.x → v2.0)
+## Migration guides
+
+### v2.x → v3.0: one package per chain
+
+Version 3.0 splits the single `ARC76Account` package into `ARC76Account.Core` plus one package
+per chain. **Namespaces did not change** — only how you install the library did. This is a
+breaking change for your `.csproj`/`packages.config`, not for your C# call sites.
+
+```diff
+- dotnet add package ARC76Account
++ dotnet add package ARC76Account.Algorand
++ dotnet add package ARC76Account.Ethereum
++ dotnet add package ARC76Account.Bitcoin
++ dotnet add package ARC76Account.BitcoinCash
+```
+
+Install only the chain packages you actually use — e.g. an Algorand-only project should add
+just `ARC76Account.Algorand`, not all four. All your existing `ARC76Account.Algorand.ARC76.*`,
+`ARC76Account.Ethereum.ARC76.*`, `ARC76Account.Utils.*`, etc. call sites are unchanged.
+
+### v1.x → v2.0
 
 Version 2.0 renames the project, NuGet package, and namespace, and reorganizes account
 derivation into one namespace per chain. This is a breaking change — no compatibility shims

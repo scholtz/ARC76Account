@@ -1,10 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -24,7 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ARC76Account\ARC76Account.csproj" />
+    <ProjectReference Include="..\ARC76Account.Core\ARC76Account.Core.csproj" />
+    <ProjectReference Include="..\ARC76Account.Algorand\ARC76Account.Algorand.csproj" />
+    <ProjectReference Include="..\ARC76Account.Ethereum\ARC76Account.Ethereum.csproj" />
+    <ProjectReference Include="..\ARC76Account.Bitcoin\ARC76Account.Bitcoin.csproj" />
+    <ProjectReference Include="..\ARC76Account.BitcoinCash\ARC76Account.BitcoinCash.csproj" />
   </ItemGroup>
 
 </Project>

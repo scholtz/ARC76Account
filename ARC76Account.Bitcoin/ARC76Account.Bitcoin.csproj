@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Title>ARC76 Account - Bitcoin</Title>
+		<Description>Deterministic ARC76 account derivation for Bitcoin (native SegWit / bech32 addresses).</Description>
+		<PackageTags>Bitcoin;ARC76;Account generation</PackageTags>
+		<PackageId>ARC76Account.Bitcoin</PackageId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="NBitcoin" Version="10.0.7" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ARC76Account.Core\ARC76Account.Core.csproj" />
+	</ItemGroup>
+
+</Project>

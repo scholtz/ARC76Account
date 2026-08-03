@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Title>ARC76 Account - Ethereum</Title>
+		<Description>Deterministic ARC76 account derivation for Ethereum and other EVM-compatible chains.</Description>
+		<PackageTags>Ethereum;EVM;ARC76;Account generation</PackageTags>
+		<PackageId>ARC76Account.Ethereum</PackageId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Nethereum.Signer" Version="6.1.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ARC76Account.Core\ARC76Account.Core.csproj" />
+	</ItemGroup>
+
+</Project>

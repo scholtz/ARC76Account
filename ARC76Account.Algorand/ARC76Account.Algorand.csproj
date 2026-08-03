@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Title>ARC76 Account - Algorand</Title>
+		<Description>Deterministic ARC76 account derivation for Algorand, plus an IAlgorandSigner/ARC76Signer for signing Algorand transactions from a password-derived key in ASP.NET Core apps.</Description>
+		<PackageTags>Algorand;ARC76;Account generation</PackageTags>
+		<PackageId>ARC76Account.Algorand</PackageId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Algorand4" Version="4.7.4.2026071920" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.10" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ARC76Account.Core\ARC76Account.Core.csproj" />
+	</ItemGroup>
+
+</Project>
