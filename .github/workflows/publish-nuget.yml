@@ -1,9 +1,9 @@
 name: Publish NuGet packages
 
 # Only runs when dotnet/ actually changed - changes under audits/ (or typescript/, python/,
-# root docs) never trigger this. Within that, `dotnet nuget push --skip-duplicate` silently
-# no-ops any package/version already on nuget.org, so a dotnet/ change that didn't bump the
-# shared Directory.Build.props <Version> still won't produce a new publish.
+# root docs) never trigger this. Within that, only the specific project(s) whose own folder
+# changed get packed and pushed (see "Determine changed packages" below) - e.g. a
+# Bitcoin-only change does not republish Algorand/Ethereum/BitcoinCash/Solana/Core.
 on:
   push:
     branches: [master]
@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   publish:
-    name: Build, test, pack, and publish
+    name: Build, test, pack, and publish changed packages
     runs-on: ubuntu-latest
     # Optional: lets you require manual approval / scope secrets to this environment in repo
     # settings. If you don't want that, delete this line - and if your nuget.org Trusted
@@ -29,11 +29,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history, needed to diff against github.event.before
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "10.0.x"
+
+      # Versioning (see dotnet/AGENTS.md "Versioning"): the *package* version is
+      # 1.0.{increment}.{yyyyMMddHH} so the exact publish date/hour is readable straight off
+      # the version number. AssemblyVersion/FileVersion use 1.0.{increment}.{MMdd} instead,
+      # since those are System.Version UInt16 fields (max 65535) and the full 10-digit
+      # timestamp would overflow that. {increment} is this workflow's run number, which only
+      # ever increases.
+      - name: Compute version
+        id: version
+        run: |
+          INCREMENT="${{ github.run_number }}"
+          FULL_DATE=$(date -u +%Y%m%d%H)
+          SHORT_DATE=$(date -u +%m%d)
+          echo "version=1.0.${INCREMENT}.${FULL_DATE}" >> "$GITHUB_OUTPUT"
+          echo "assembly_version=1.0.${INCREMENT}.${SHORT_DATE}" >> "$GITHUB_OUTPUT"
+          echo "Package version: 1.0.${INCREMENT}.${FULL_DATE} (assembly/file version: 1.0.${INCREMENT}.${SHORT_DATE})"
 
       - name: Restore
         working-directory: dotnet
@@ -41,27 +59,66 @@ jobs:
 
       - name: Build
         working-directory: dotnet
-        run: dotnet build --configuration Release --no-restore
+        run: >
+          dotnet build --configuration Release --no-restore
+          -p:Version=${{ steps.version.outputs.version }}
+          -p:AssemblyVersion=${{ steps.version.outputs.assembly_version }}
+          -p:FileVersion=${{ steps.version.outputs.assembly_version }}
 
       - name: Test
         working-directory: dotnet
         run: dotnet test --configuration Release --no-build
 
-      - name: "Pack (all packable projects: Core + one per chain)"
+      # Only the projects whose own folder changed get packed+pushed below. A project depending
+      # on Core (via ProjectReference) does NOT get republished just because Core changed -
+      # its already-published nupkg keeps depending on whatever Core version it was built
+      # against, which stays available on nuget.org. Bump/republish a dependent explicitly if
+      # it needs to pick up a Core change.
+      - name: Determine changed packages
+        id: changed
         working-directory: dotnet
-        run: dotnet pack --configuration Release --no-build --output ../artifacts
+        run: |
+          PROJECTS=(Core Algorand Ethereum Bitcoin BitcoinCash Solana)
+          BEFORE="${{ github.event.before }}"
+          : > /tmp/changed-projects.txt
+          for name in "${PROJECTS[@]}"; do
+            proj="ARC76Account.$name"
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+              echo "$proj" >> /tmp/changed-projects.txt
+            elif ! git diff --quiet "$BEFORE" "${{ github.sha }}" -- "$proj/"; then
+              echo "$proj" >> /tmp/changed-projects.txt
+            fi
+          done
+          echo "Changed projects:"
+          cat /tmp/changed-projects.txt
+
+      - name: Pack changed packages
+        working-directory: dotnet
+        run: |
+          mkdir -p ../artifacts
+          while IFS= read -r proj; do
+            [ -z "$proj" ] && continue
+            dotnet pack "$proj/$proj.csproj" --configuration Release --no-build \
+              -p:Version=${{ steps.version.outputs.version }} \
+              -p:AssemblyVersion=${{ steps.version.outputs.assembly_version }} \
+              -p:FileVersion=${{ steps.version.outputs.assembly_version }} \
+              --output ../artifacts
+          done < /tmp/changed-projects.txt
+          ls -la ../artifacts || true
 
       # See https://learn.microsoft.com/nuget/nuget-org/trusted-publishing
       # Configure a Trusted Publishing policy on nuget.org (per package, or account-wide) with:
       #   Repository Owner: scholtz | Repository: ARC76Account | Workflow File: publish-nuget.yml
       # NUGET_USER is a repo/environment secret holding your nuget.org *username* (not email).
       - name: NuGet login (OIDC -> short-lived API key)
+        if: hashFiles('artifacts/*.nupkg') != ''
         uses: NuGet/login@v1
         id: login
         with:
           user: ${{ secrets.NUGET_USER }}
 
-      - name: Push (skips package/version combinations already published)
+      - name: Push
+        if: hashFiles('artifacts/*.nupkg') != ''
         run: >
           dotnet nuget push "artifacts/*.nupkg"
           --api-key ${{ steps.login.outputs.NUGET_API_KEY }}

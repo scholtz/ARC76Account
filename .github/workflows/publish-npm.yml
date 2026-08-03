@@ -1,10 +1,9 @@
 name: Publish npm packages
 
 # Only runs when typescript/ actually changed - changes under audits/ (or dotnet/, python/,
-# root docs) never trigger this. Within that, each package is only published if its own
-# package.json version differs from what's already on the npm registry (see "Check if version
-# changed" below) - a typescript/ change that didn't bump a given package's version just
-# builds/tests it and skips the publish step for that package.
+# root docs) never trigger this. Within that, each package is only built/published if that
+# specific package's own folder changed (see "Check if this package's files changed" below) -
+# e.g. a Bitcoin-only change does not republish Algorand/Ethereum/BitcoinCash/Solana/Core.
 on:
   push:
     branches: [master]
@@ -30,17 +29,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Order matters only in that arc76-core is built once for all of them below; the
-        # matrix itself doesn't require it to run first.
         package: [core, algorand, ethereum, bitcoin, bitcoincash, solana]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history, needed to diff against github.event.before
+
+      # A dependent package (e.g. arc76-bitcoin) does NOT get republished just because
+      # arc76-core changed - its already-published version keeps depending on whatever core
+      # version range it declares. Bump/republish a dependent explicitly if it needs a newer
+      # core.
+      - name: Check if this package's files changed
+        id: changed
+        run: |
+          BEFORE="${{ github.event.before }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          elif git diff --quiet "$BEFORE" "${{ github.sha }}" -- "typescript/packages/${{ matrix.package }}/"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Setup pnpm
+        if: steps.changed.outputs.changed == 'true'
         uses: pnpm/action-setup@v4 # reads the pinned version from typescript/package.json's "packageManager"
 
       - name: Setup Node
+        if: steps.changed.outputs.changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -49,9 +66,11 @@ jobs:
       # npm Trusted Publishing requires npm CLI >= 11.5.1; don't rely on whatever ships with
       # the Node version above.
       - name: Ensure npm is new enough for Trusted Publishing
+        if: steps.changed.outputs.changed == 'true'
         run: npm install -g npm@latest
 
       - name: Install workspace dependencies
+        if: steps.changed.outputs.changed == 'true'
         working-directory: typescript
         run: pnpm install --frozen-lockfile
 
@@ -59,36 +78,47 @@ jobs:
       # resolve each other via package.json main/types, not TS source) - build it first
       # regardless of which package this matrix job is publishing.
       - name: Build arc76-core
+        if: steps.changed.outputs.changed == 'true'
         working-directory: typescript
         run: pnpm --filter arc76-core build
 
       - name: Build arc76-${{ matrix.package }}
+        if: steps.changed.outputs.changed == 'true'
         working-directory: typescript
         run: pnpm --filter arc76-${{ matrix.package }} build
 
       - name: Test arc76-${{ matrix.package }}
+        if: steps.changed.outputs.changed == 'true'
         working-directory: typescript
         run: pnpm --filter arc76-${{ matrix.package }} test
 
-      - name: Check if version changed
-        id: version_check
-        working-directory: typescript/packages/${{ matrix.package }}
+      # Versioning (see typescript/AGENTS.md "Versioning"): semver's release core only allows
+      # three dot-separated numeric segments (no 4th "date" segment like the .NET side uses),
+      # and semver build-metadata (+...) suffixes are unreliable - some tooling strips them, so
+      # the date wouldn't reliably survive. Instead the patch number itself is
+      # {increment}{yyyyMMddHH} concatenated (e.g. run 7 published 2026-08-03 14:00 UTC ->
+      # patch 72026080314) - still a perfectly ordinary, always-increasing semver patch, but
+      # the trailing 10 digits are always this exact, parseable timestamp.
+      - name: Compute version
+        if: steps.changed.outputs.changed == 'true'
+        id: version
         run: |
-          LOCAL_VERSION=$(node -p "require('./package.json').version")
-          PACKAGE_NAME=$(node -p "require('./package.json').name")
-          PUBLISHED_VERSION=$(npm view "$PACKAGE_NAME" version 2>/dev/null || echo "")
-          echo "Local: $LOCAL_VERSION / Published: ${PUBLISHED_VERSION:-none}"
-          if [ "$LOCAL_VERSION" != "$PUBLISHED_VERSION" ]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          fi
+          INCREMENT="${{ github.run_number }}"
+          FULL_DATE=$(date -u +%Y%m%d%H)
+          VERSION="1.0.${INCREMENT}${FULL_DATE}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION"
+
+      - name: Set package version
+        if: steps.changed.outputs.changed == 'true'
+        working-directory: typescript/packages/${{ matrix.package }}
+        run: pnpm version ${{ steps.version.outputs.version }} --no-git-tag-version --allow-same-version
 
       # Use `pnpm pack` (not `npm pack`) so the "arc76-core": "workspace:*" dependency range
       # gets rewritten to a real published version number in the tarball's package.json - npm
       # doesn't understand the workspace: protocol at all.
       - name: Pack
-        if: steps.version_check.outputs.changed == 'true'
+        if: steps.changed.outputs.changed == 'true'
         working-directory: typescript/packages/${{ matrix.package }}
         run: pnpm pack --pack-destination /tmp/arc76-pack
 
@@ -97,6 +127,6 @@ jobs:
       # Publisher on npmjs.com for each arc76-* package with:
       #   Organization or user: scholtz | Repository: ARC76Account | Workflow filename: publish-npm.yml
       - name: Publish
-        if: steps.version_check.outputs.changed == 'true'
+        if: steps.changed.outputs.changed == 'true'
         working-directory: typescript/packages/${{ matrix.package }}
         run: npm publish /tmp/arc76-pack/*.tgz

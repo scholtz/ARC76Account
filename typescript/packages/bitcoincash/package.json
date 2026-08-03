@@ -18,7 +18,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "arc76-core": "workspace:*",
+    "arc76-core": "workspace:^",
     "bitcoinjs-lib": "^7.0.1",
     "cashaddrjs": "^0.4.4",
     "ecpair": "^3.0.1",

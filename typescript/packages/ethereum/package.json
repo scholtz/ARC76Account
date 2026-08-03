@@ -18,7 +18,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "arc76-core": "workspace:*",
+    "arc76-core": "workspace:^",
     "buffer": "^6.0.3",
     "ethers": "^6.17.0"
   },

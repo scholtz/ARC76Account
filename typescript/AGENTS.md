@@ -133,16 +133,47 @@ Follow the same shape as the existing packages:
   cross-language compatibility with `dotnet/` and every other chain package here — treat it as
   a major version bump across all affected packages.
 
+## Versioning
+
+Like `dotnet/`, package versions are **not** hand-maintained in each `package.json` — the
+committed `"version"` field (currently `1.0.0` in every package) is just a placeholder for
+local dev; CI overwrites it ephemerally right before packing/publishing and never commits the
+bump back.
+
+The published version is `1.0.{increment}{yyyyMMddHH}` — e.g. run #7, published
+2026-08-03 14:00 UTC, becomes `1.0.72026080314`. **The trailing 10 digits are always the exact
+publish timestamp**, so you can read off when a package was last published just from its
+version string. This deviates slightly from `dotnet/`'s dotted `1.0.{increment}.{yyyyMMddHH}`
+because semver's release core only allows three dot-separated numeric segments — a 4th dotted
+segment is invalid semver and `npm publish` rejects it. Semver *build metadata*
+(`1.0.7+2026080314`) was considered and rejected: some tooling in the npm/semver ecosystem
+silently strips `+build` suffixes (verified empirically — `npm version`/`semver.clean()` do
+this), so it wouldn't reliably survive. The concatenated-patch form
+(`1.0.{increment}{date}`) is a perfectly ordinary, always-increasing semver patch with no such
+risk — verified against the `semver` package directly, including that larger `{increment}`
+values always sort higher regardless of the fixed-width date suffix.
+
+`{increment}` is `github.run_number` (monotonically increasing, never resets) in CI. Never
+hand-edit a package's committed version to look like the computed scheme — it'll just be
+overwritten at publish time anyway, and a stray real-looking version in git is confusing.
+
+Because every chain package's `package.json` declares `"arc76-core": "workspace:^"` (not
+`"workspace:*"`) — `pnpm pack`/`pnpm publish` rewrite that to a **caret range** like `^1.0.0`
+in the published tarball, not a pin to one exact version. This is deliberate: each of the 6
+packages is published from its own isolated CI matrix job (see `.github/workflows/publish-npm.yml`),
+so a dependent package's job has no way to know the exact ephemeral version `arc76-core`'s
+*own* job happened to publish in the same run. A caret range against core's committed
+placeholder major.minor (`^1.0.0`) matches every real published core version we ever produce
+(they're all `1.0.{huge number}`, and `^1.0.0` means `>=1.0.0 <2.0.0`) — so this works
+correctly without cross-job coordination. If you ever bump the major/minor prefix away from
+`1.0`, re-verify this still holds.
+
 ## Release process
 
-Each package's version is set independently in its own `package.json` — there's no
-`Directory.Build.props`-equivalent shared version file here (unlike `dotnet/`). When bumping
-multiple packages together for a coordinated release, update each `package.json` by hand and
-keep them in sync deliberately, or introduce a versioning tool (e.g. Changesets) if this
-becomes unwieldy — don't assume they're already synced.
-
-Publishing itself is automated: `.github/workflows/publish-npm.yml` (repo root, not under
-`typescript/`) triggers on `typescript/**` changes and publishes each `arc76-*` package via npm
-Trusted Publishing (OIDC) **only if that package's own `package.json` version differs from
-what's already on the registry** — bumping a package's version is what actually causes a
-publish; committing code changes alone does not. See the root `AGENTS.md`'s "CI/CD" section.
+Publishing is fully automated by `.github/workflows/publish-npm.yml` (repo root, not under
+`typescript/`): it triggers on `typescript/**` changes, and for each of the 6 packages
+independently, diffs that package's own `typescript/packages/<name>/` folder against the
+previous commit — only packages whose own files actually changed get built, tested, and
+published. A change to `arc76-core` does **not** cause `arc76-algorand` etc. to be
+republished (see "Versioning" above for why that's safe) — bump/touch a dependent's own files
+if it needs to be republished. See the root `AGENTS.md`'s "CI/CD" section.

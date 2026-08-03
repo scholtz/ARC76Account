@@ -50,17 +50,24 @@ Two GitHub Actions workflows handle releases, both using **Trusted Publishing** 
 long-lived API keys/tokens stored in this repo):
 
 - **[`.github/workflows/publish-nuget.yml`](.github/workflows/publish-nuget.yml)** — triggers
-  only on changes under `dotnet/`, builds/tests/packs all six .NET packages, and pushes with
-  `--skip-duplicate` (so a `dotnet/` change that didn't bump the shared version in
-  `dotnet/Directory.Build.props` publishes nothing new).
+  only on changes under `dotnet/`, then builds+tests everything but only packs+pushes the
+  specific project(s) whose own folder actually changed (e.g. a Bitcoin-only change doesn't
+  republish the other five).
 - **[`.github/workflows/publish-npm.yml`](.github/workflows/publish-npm.yml)** — triggers only
-  on changes under `typescript/`, and publishes **each** `arc76-*` package independently, only
-  if that package's own `package.json` version differs from what's already on the npm registry.
+  on changes under `typescript/`, and independently builds+tests+publishes **each** `arc76-*`
+  package only if that specific package's own folder changed.
 
 Changes to `audits/` (or anything outside `dotnet/`/`typescript/`) never trigger either
-workflow, and neither workflow re-publishes a package/version that's already live — so running
-an audit, or touching one language's code, never force-publishes an unrelated or unchanged
-package.
+workflow — so running an audit, or touching one language's code, never force-publishes an
+unrelated or unchanged package.
+
+**Versioning**: every published version encodes exactly when it was published, so you never
+need to look anywhere else to find out. .NET packages use `1.0.{increment}.{yyyyMMddHH}` (e.g.
+`1.0.42.2026080314` — run #42, 2026-08-03 14:00 UTC); npm packages use the closest
+semver-legal equivalent, `1.0.{increment}{yyyyMMddHH}` (concatenated into the patch number,
+since semver doesn't allow a 4th dotted segment — e.g. `1.0.422026080314`). `{increment}` is
+the GitHub Actions run number, which only ever goes up. See `dotnet/AGENTS.md`/
+`typescript/AGENTS.md` for the full rationale.
 
 **One-time setup required** (not done by these workflows themselves):
 - On [nuget.org](https://www.nuget.org): add a Trusted Publishing policy —

@@ -17,7 +17,27 @@
     <RepositoryType>git</RepositoryType>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <Authors>Ludovit Scholtz</Authors>
-    <Version>3.1.0</Version>
+  </PropertyGroup>
+
+  <!--
+    Versioning scheme (see AGENTS.md "Versioning"): package Version is 1.0.{increment}.{yyyyMMddHH},
+    so the exact publish date/hour is always readable directly from the version number. The
+    build-facing AssemblyVersion/FileVersion use 1.0.{increment}.{MMdd} instead, because
+    AssemblyVersion/FileVersion components are System.Version UInt16 fields (max 65535) and a
+    10-digit yyyyMMddHH would overflow that - MMdd (max 1231) fits comfortably.
+
+    CI (.github/workflows/publish-nuget.yml) overrides Version/AssemblyVersion/FileVersion
+    directly via -p: MSBuild properties computed from github.run_number + the build timestamp,
+    which take precedence over everything below. BuildIncrement/BuildDateFull/BuildDateShort
+    below only supply sensible defaults for local `dotnet build`/`dotnet pack` runs.
+  -->
+  <PropertyGroup>
+    <BuildIncrement Condition="'$(BuildIncrement)' == ''">0</BuildIncrement>
+    <BuildDateFull Condition="'$(BuildDateFull)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMddHH'))</BuildDateFull>
+    <BuildDateShort Condition="'$(BuildDateShort)' == ''">$([System.DateTime]::UtcNow.ToString('MMdd'))</BuildDateShort>
+    <Version Condition="'$(Version)' == ''">1.0.$(BuildIncrement).$(BuildDateFull)</Version>
+    <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">1.0.$(BuildIncrement).$(BuildDateShort)</AssemblyVersion>
+    <FileVersion Condition="'$(FileVersion)' == ''">1.0.$(BuildIncrement).$(BuildDateShort)</FileVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsPackable)' != 'false'">

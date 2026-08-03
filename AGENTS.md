@@ -56,12 +56,21 @@ No root `.editorconfig`.
 
 ## CI/CD (`.github/workflows/`)
 
-- `publish-nuget.yml` — path-triggered on `dotnet/**` only; packs+pushes all six .NET packages
-  via NuGet Trusted Publishing (OIDC, no stored API key), relying on `--skip-duplicate` so an
-  unbumped version is a no-op.
-- `publish-npm.yml` — path-triggered on `typescript/**` only; publishes each `arc76-*` package
-  independently via npm Trusted Publishing (OIDC), only if that package's own version differs
-  from the registry.
+- `publish-nuget.yml` — path-triggered on `dotnet/**` only; diffs each of the six .NET
+  projects' own folder against the previous commit and packs+pushes only the ones that
+  changed, via NuGet Trusted Publishing (OIDC, no stored API key). `--skip-duplicate` is kept
+  as a defensive fallback, not the primary gate.
+- `publish-npm.yml` — path-triggered on `typescript/**` only; diffs each of the six `arc76-*`
+  packages' own folder independently and publishes only the ones that changed, via npm Trusted
+  Publishing (OIDC).
+
+**Versions are computed by CI, not hand-maintained** — see `dotnet/AGENTS.md` and
+`typescript/AGENTS.md`'s "Versioning" sections. In short: `1.0.{increment}.{yyyyMMddHH}` for
+NuGet packages (`{increment}.{MMdd}` for the compiled AssemblyVersion/FileVersion, since that's
+a UInt16-per-component field), and `1.0.{increment}{yyyyMMddHH}` (concatenated, not dotted —
+semver doesn't allow a 4th segment) for npm packages. Either way, the exact publish date/hour
+is always readable directly from the version number — that's the point of the scheme, so don't
+"simplify" it back to a plain incrementing number without preserving that property.
 
 **Neither workflow is triggered by an `audits/` folder** (or anything outside `dotnet/`/
 `typescript/`) — that's deliberate, so running an audit never force-publishes anything. If you

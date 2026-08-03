@@ -131,14 +131,41 @@ project, the tests, the README, and the `.sln`/`Directory.Build.props` wiring.
   change to every existing derived address, on every chain — treat it as a major version bump
   and call it out loudly in the PR description, not just the changelog.
 
+## Versioning
+
+Package versions are **not** hand-maintained in `Directory.Build.props` anymore — they're
+computed at build time:
+
+- `<Version>` (the NuGet package version): `1.0.{increment}.{yyyyMMddHH}` — e.g.
+  `1.0.42.2026080314` was built by run #42, published 2026-08-03 14:00 UTC. **This means you
+  can always tell exactly when a package was published just by reading its version number** —
+  that's the reason for this format.
+- `<AssemblyVersion>`/`<FileVersion>` (the "build version" baked into the compiled DLL):
+  `1.0.{increment}.{MMdd}` — a *shorter* date (month+day only), because
+  `AssemblyVersion`/`FileVersion` are `System.Version` fields where every component is a
+  UInt16 (max 65535) — the full 10-digit `yyyyMMddHH` would overflow that; `MMdd` (max 1231)
+  fits comfortably.
+- `{increment}` is the same value in both — in CI, `github.run_number` (monotonically
+  increasing, never resets). Locally, `Directory.Build.props` defaults it to `0` and computes
+  the dates from `DateTime.UtcNow`, so plain `dotnet build`/`dotnet pack` still works and
+  produces a plausible (if not meaningful) version.
+
+Don't reintroduce a static hand-bumped `<Version>` — if you need a one-off custom version for
+local testing, pass it on the command line (`dotnet build -p:Version=9.9.9.9999999999`), which
+already overrides everything in `Directory.Build.props` (see the comment block above the
+`BuildIncrement`/`BuildDateFull`/`BuildDateShort` properties there).
+
 ## Release process
 
-The shared `<Version>` lives in `Directory.Build.props` and applies to every package
-(`ARC76Account.Core`, `ARC76Account.Algorand`, `ARC76Account.Ethereum`, `ARC76Account.Bitcoin`,
-`ARC76Account.BitcoinCash`, `ARC76Account.Solana`) — bump it there once per release rather than
-per-project. Each project has `GeneratePackageOnBuild=True`, so `dotnet build` produces all six
-`.nupkg` files. Update `README.md` (and add a migration guide entry, if the change is breaking)
-before publishing.
+`.github/workflows/publish-nuget.yml` (repo root) computes the version (see "Versioning"
+above) and passes it via `-p:Version=`/`-p:AssemblyVersion=`/`-p:FileVersion=` to `dotnet
+build`/`dotnet pack`, so **don't** edit `Directory.Build.props` to bump a version for a release
+— there's nothing to bump. What actually gates a release is which package(s) get packed and
+pushed: the workflow diffs each project's own folder against the previous commit and only
+packs+pushes the ones that changed (see the workflow's "Determine changed packages" step) —
+a `ARC76Account.Bitcoin`-only change does not republish the other five. Update `README.md`
+(and add a migration guide entry, if the change is breaking) before merging, since publishing
+itself happens automatically on merge to `master`.
 
 History: package was `AlgorandARC76Account` (single package, namespace
 `AlgorandARC76AccountDotNet`) through v1.x; renamed to `ARC76Account` (single package) at
