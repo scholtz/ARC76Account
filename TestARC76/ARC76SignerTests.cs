@@ -22,6 +22,12 @@ namespace TestARC76
             account = AlgorandARC76AccountDotNet.ARC76.GetAccount("12345678901234567890123456789012345678901234567890");
             signer = new ARC76Signer(options);
         }
+
+        [TearDown]
+        public void TearDown()
+        {
+            account.Dispose();
+        }
         private IOptionsMonitor<AlgorandARC76AccountDotNet.Model.Config.ARC76Config> GetOptionsMonitor(AlgorandARC76AccountDotNet.Model.Config.ARC76Config appConfig)
         {
             var optionsMonitorMock = new Mock<IOptionsMonitor<AlgorandARC76AccountDotNet.Model.Config.ARC76Config>>();
