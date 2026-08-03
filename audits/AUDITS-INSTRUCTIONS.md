@@ -352,6 +352,13 @@ than one in a day, append `-2`, `-3`, ...). Use this structure:
 ```markdown
 # ARC76 Security Audit Report — {date}
 
+## Auditor
+{Who/what actually performed this audit: the AI model (exact model ID, e.g. `claude-sonnet-5`)
+if run by an AI assistant, or the human's name if performed manually/by a person. If an AI model
+ran it under a person's direction, name both — e.g. "claude-opus-5, invoked by Jane Doe". This
+matters because different models/people have different blind spots; a reader re-checking this
+report needs to know whose judgment produced it.}
+
 ## Executive summary
 {2-4 sentences: overall posture, count of findings by severity, headline risk if any}
 
