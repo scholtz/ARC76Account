@@ -44,6 +44,34 @@ Shared, repo-root files: `LICENSE.txt` (applies to the whole repo), this `README
 `AGENTS.md`/`AI_INTEGRATION.md` (repo-wide overviews — see those files for how instructions are
 split between root and per-language).
 
+## Automated publishing (CI/CD)
+
+Two GitHub Actions workflows handle releases, both using **Trusted Publishing** (OIDC — no
+long-lived API keys/tokens stored in this repo):
+
+- **[`.github/workflows/publish-nuget.yml`](.github/workflows/publish-nuget.yml)** — triggers
+  only on changes under `dotnet/`, builds/tests/packs all six .NET packages, and pushes with
+  `--skip-duplicate` (so a `dotnet/` change that didn't bump the shared version in
+  `dotnet/Directory.Build.props` publishes nothing new).
+- **[`.github/workflows/publish-npm.yml`](.github/workflows/publish-npm.yml)** — triggers only
+  on changes under `typescript/`, and publishes **each** `arc76-*` package independently, only
+  if that package's own `package.json` version differs from what's already on the npm registry.
+
+Changes to `audits/` (or anything outside `dotnet/`/`typescript/`) never trigger either
+workflow, and neither workflow re-publishes a package/version that's already live — so running
+an audit, or touching one language's code, never force-publishes an unrelated or unchanged
+package.
+
+**One-time setup required** (not done by these workflows themselves):
+- On [nuget.org](https://www.nuget.org): add a Trusted Publishing policy —
+  Repository Owner `scholtz`, Repository `ARC76Account`, Workflow File `publish-nuget.yml` —
+  plus a repo/environment secret `NUGET_USER` holding your nuget.org username.
+- On [npmjs.com](https://www.npmjs.com): add a Trusted Publisher to each `arc76-*` package —
+  Organization/user `scholtz`, Repository `ARC76Account`, Workflow filename `publish-npm.yml`.
+- Both workflows target a GitHub Actions `environment: release`; either create that
+  environment in repo settings (optionally with required reviewers) or remove the
+  `environment:` line from both workflow files if you don't want that gate.
+
 ## AI-assisted development
 
 See [AGENTS.md](AGENTS.md) if you're an AI coding agent contributing to this repo, or

@@ -9,7 +9,7 @@
   "description": "Deterministic ARC76 account derivation for Bitcoin (native SegWit / bech32 addresses). https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/scholtz/AlgorandARC76AccountDotNet.git",
+    "url": "https://github.com/scholtz/ARC76Account.git",
     "directory": "typescript/packages/bitcoin"
   },
   "keywords": ["arc76", "Bitcoin", "cryptography", "account generation"],

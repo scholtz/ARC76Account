@@ -23,8 +23,11 @@ actual build/test commands, coding conventions, and architecture notes for that 
 root file is only the cross-language map; don't duplicate per-language detail here, and don't
 let this file go stale relative to the nested ones.
 
-The GitHub repo is still named `AlgorandARC76AccountDotNet` (historical; unchanged since this
-was originally a .NET-only repo before the v3.x package split and this multi-language reorg).
+The GitHub repo is `scholtz/ARC76Account` (renamed from `scholtz/AlgorandARC76AccountDotNet` —
+that was its name when this was originally a .NET-only repo, before the v3.x package split and
+this multi-language reorg). If you find `AlgorandARC76AccountDotNet` in a URL anywhere in this
+repo (outside of historical migration-guide text describing the old C# namespace of the same
+name), it's stale — fix it to `ARC76Account`.
 
 ## Shared ARC76 semantics (cross-language contract)
 
@@ -49,7 +52,24 @@ AI_INTEGRATION.md  Repo-level index of per-language consumer-facing AI guides
 .claude/skills/add-chain-support/  Currently .NET-specific (adding a new chain package) — see dotnet/AGENTS.md
 ```
 
-No CI workflow exists yet (no `.github/workflows`). No root `.editorconfig`.
+No root `.editorconfig`.
+
+## CI/CD (`.github/workflows/`)
+
+- `publish-nuget.yml` — path-triggered on `dotnet/**` only; packs+pushes all six .NET packages
+  via NuGet Trusted Publishing (OIDC, no stored API key), relying on `--skip-duplicate` so an
+  unbumped version is a no-op.
+- `publish-npm.yml` — path-triggered on `typescript/**` only; publishes each `arc76-*` package
+  independently via npm Trusted Publishing (OIDC), only if that package's own version differs
+  from the registry.
+
+**Neither workflow is triggered by an `audits/` folder** (or anything outside `dotnet/`/
+`typescript/`) — that's deliberate, so running an audit never force-publishes anything. If you
+add a third workflow or change these triggers, preserve that property: publishing should only
+ever be a side effect of an actual `dotnet/` or `typescript/` code change, never of unrelated
+repo activity. See the root `README.md`'s "Automated publishing" section for the one-time
+nuget.org/npmjs.com/GitHub setup these workflows assume (Trusted Publishing policies, the
+optional `release` environment, the `NUGET_USER` secret).
 
 ## History
 

@@ -10,10 +10,10 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Company>Scholtz&amp;Co</Company>
     <Copyright>Scholtz</Copyright>
-    <PackageProjectUrl>https://github.com/scholtz/AlgorandARC76AccountDotNet</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/scholtz/ARC76Account</PackageProjectUrl>
     <PackageIcon>arc76-logo-512.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/scholtz/AlgorandARC76AccountDotNet</RepositoryUrl>
+    <RepositoryUrl>https://github.com/scholtz/ARC76Account</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <Authors>Ludovit Scholtz</Authors>

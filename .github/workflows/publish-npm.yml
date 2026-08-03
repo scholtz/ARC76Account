@@ -1,0 +1,102 @@
+name: Publish npm packages
+
+# Only runs when typescript/ actually changed - changes under audits/ (or dotnet/, python/,
+# root docs) never trigger this. Within that, each package is only published if its own
+# package.json version differs from what's already on the npm registry (see "Check if version
+# changed" below) - a typescript/ change that didn't bump a given package's version just
+# builds/tests it and skips the publish step for that package.
+on:
+  push:
+    branches: [master]
+    paths:
+      - "typescript/**"
+      - ".github/workflows/publish-npm.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Build, test, and publish (arc76-${{ matrix.package }})
+    runs-on: ubuntu-latest
+    # Optional: lets you require manual approval / scope secrets to this environment in repo
+    # settings. If you don't want that, delete this line - and if your npmjs.com Trusted
+    # Publisher config has an Environment set, it must match (or be blank if removed here).
+    environment: release
+    permissions:
+      id-token: write # required to obtain the GitHub OIDC token for npm Trusted Publishing
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        # Order matters only in that arc76-core is built once for all of them below; the
+        # matrix itself doesn't require it to run first.
+        package: [core, algorand, ethereum, bitcoin, bitcoincash, solana]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4 # reads the pinned version from typescript/package.json's "packageManager"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      # npm Trusted Publishing requires npm CLI >= 11.5.1; don't rely on whatever ships with
+      # the Node version above.
+      - name: Ensure npm is new enough for Trusted Publishing
+        run: npm install -g npm@latest
+
+      - name: Install workspace dependencies
+        working-directory: typescript
+        run: pnpm install --frozen-lockfile
+
+      # Every chain package depends on arc76-core's *built* dist/ output (workspace packages
+      # resolve each other via package.json main/types, not TS source) - build it first
+      # regardless of which package this matrix job is publishing.
+      - name: Build arc76-core
+        working-directory: typescript
+        run: pnpm --filter arc76-core build
+
+      - name: Build arc76-${{ matrix.package }}
+        working-directory: typescript
+        run: pnpm --filter arc76-${{ matrix.package }} build
+
+      - name: Test arc76-${{ matrix.package }}
+        working-directory: typescript
+        run: pnpm --filter arc76-${{ matrix.package }} test
+
+      - name: Check if version changed
+        id: version_check
+        working-directory: typescript/packages/${{ matrix.package }}
+        run: |
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PUBLISHED_VERSION=$(npm view "$PACKAGE_NAME" version 2>/dev/null || echo "")
+          echo "Local: $LOCAL_VERSION / Published: ${PUBLISHED_VERSION:-none}"
+          if [ "$LOCAL_VERSION" != "$PUBLISHED_VERSION" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Use `pnpm pack` (not `npm pack`) so the "arc76-core": "workspace:*" dependency range
+      # gets rewritten to a real published version number in the tarball's package.json - npm
+      # doesn't understand the workspace: protocol at all.
+      - name: Pack
+        if: steps.version_check.outputs.changed == 'true'
+        working-directory: typescript/packages/${{ matrix.package }}
+        run: pnpm pack --pack-destination /tmp/arc76-pack
+
+      # Publish the tarball via the npm CLI specifically (not `pnpm publish`) for Trusted
+      # Publishing - see https://docs.npmjs.com/trusted-publishers/. Configure a Trusted
+      # Publisher on npmjs.com for each arc76-* package with:
+      #   Organization or user: scholtz | Repository: ARC76Account | Workflow filename: publish-npm.yml
+      - name: Publish
+        if: steps.version_check.outputs.changed == 'true'
+        working-directory: typescript/packages/${{ matrix.package }}
+        run: npm publish /tmp/arc76-pack/*.tgz

@@ -140,3 +140,9 @@ Each package's version is set independently in its own `package.json` — there'
 multiple packages together for a coordinated release, update each `package.json` by hand and
 keep them in sync deliberately, or introduce a versioning tool (e.g. Changesets) if this
 becomes unwieldy — don't assume they're already synced.
+
+Publishing itself is automated: `.github/workflows/publish-npm.yml` (repo root, not under
+`typescript/`) triggers on `typescript/**` changes and publishes each `arc76-*` package via npm
+Trusted Publishing (OIDC) **only if that package's own `package.json` version differs from
+what's already on the registry** — bumping a package's version is what actually causes a
+publish; committing code changes alone does not. See the root `AGENTS.md`'s "CI/CD" section.

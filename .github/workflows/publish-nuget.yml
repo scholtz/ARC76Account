@@ -1,0 +1,69 @@
+name: Publish NuGet packages
+
+# Only runs when dotnet/ actually changed - changes under audits/ (or typescript/, python/,
+# root docs) never trigger this. Within that, `dotnet nuget push --skip-duplicate` silently
+# no-ops any package/version already on nuget.org, so a dotnet/ change that didn't bump the
+# shared Directory.Build.props <Version> still won't produce a new publish.
+on:
+  push:
+    branches: [master]
+    paths:
+      - "dotnet/**"
+      - ".github/workflows/publish-nuget.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Build, test, pack, and publish
+    runs-on: ubuntu-latest
+    # Optional: lets you require manual approval / scope secrets to this environment in repo
+    # settings. If you don't want that, delete this line - and if your nuget.org Trusted
+    # Publishing policy has an Environment set, it must match (or be blank if removed here).
+    environment: release
+    permissions:
+      id-token: write # required to obtain the GitHub OIDC token for NuGet Trusted Publishing
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        working-directory: dotnet
+        run: dotnet restore
+
+      - name: Build
+        working-directory: dotnet
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        working-directory: dotnet
+        run: dotnet test --configuration Release --no-build
+
+      - name: "Pack (all packable projects: Core + one per chain)"
+        working-directory: dotnet
+        run: dotnet pack --configuration Release --no-build --output ../artifacts
+
+      # See https://learn.microsoft.com/nuget/nuget-org/trusted-publishing
+      # Configure a Trusted Publishing policy on nuget.org (per package, or account-wide) with:
+      #   Repository Owner: scholtz | Repository: ARC76Account | Workflow File: publish-nuget.yml
+      # NUGET_USER is a repo/environment secret holding your nuget.org *username* (not email).
+      - name: NuGet login (OIDC -> short-lived API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push (skips package/version combinations already published)
+        run: >
+          dotnet nuget push "artifacts/*.nupkg"
+          --api-key ${{ steps.login.outputs.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate

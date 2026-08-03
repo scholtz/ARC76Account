@@ -14,7 +14,8 @@ deterministic account/key derivation from a password (optionally salted with an 
 PBKDF2-HMAC-SHA256 (999999 iterations, 32-byte output) as the shared seed for every
 chain-specific key.
 
-The GitHub repo is still named `AlgorandARC76AccountDotNet` (unchanged). As of v3.0, the
+The GitHub repo is `scholtz/ARC76Account` (renamed from `scholtz/AlgorandARC76AccountDotNet`;
+`PackageProjectUrl`/`RepositoryUrl` in `Directory.Build.props` point at the new name). As of v3.0, the
 library is split into **one .NET project/NuGet package per chain**, plus a shared `Core`
 package — this is deliberate: installing `ARC76Account.Bitcoin` must not drag in `Algorand4`,
 `Nethereum.Signer`, or `NBitcoin.Altcoins`. Don't reintroduce a single merged assembly.
@@ -58,7 +59,10 @@ packed).
 - `README.md` — public usage docs, migration guides, and "adding a new chain" pointer (packed into every NuGet package — keep in sync with the actual namespaces/methods)
 - `AI_INTEGRATION.md` — API reference aimed at AI assistants writing *consumer* code against these packages (not packed into the NuGet packages)
 
-No CI workflow exists yet (no `.github/workflows`). No `.editorconfig`.
+No `.editorconfig`. There is a publish workflow, `.github/workflows/publish-nuget.yml` (repo
+root, not under `dotnet/`) — see the root `AGENTS.md`'s "CI/CD" section. It's a NuGet Trusted
+Publishing (OIDC) pipeline triggered only by `dotnet/**` changes; there's no separate
+test-on-PR workflow.
 
 ## Namespace gotcha
 
