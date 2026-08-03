@@ -18,16 +18,14 @@ namespace ARC76Account.Core
         {
             byte[] salt = Encoding.ASCII.GetBytes($"ARC-0076-{slot}-PBKDF2-999999");
             byte[] input = Encoding.UTF8.GetBytes($"ARC-0076-{password}-{slot}-PBKDF2-999999");
-            Rfc2898DeriveBytes pbkdf2 = new(input, salt, Iterations, HashAlgorithmName.SHA256);
-            return pbkdf2.GetBytes(HashSize);
+            return Rfc2898DeriveBytes.Pbkdf2(input, salt, Iterations, HashAlgorithmName.SHA256, HashSize);
         }
 
         internal static byte[] Derive(string email, string password, int slot)
         {
             byte[] salt = Encoding.ASCII.GetBytes($"ARC-0076-{email}-{slot}-PBKDF2-999999");
             byte[] input = Encoding.UTF8.GetBytes($"ARC-0076-{email}-{password}-{slot}-PBKDF2-999999");
-            Rfc2898DeriveBytes pbkdf2 = new(input, salt, Iterations, HashAlgorithmName.SHA256);
-            return pbkdf2.GetBytes(HashSize);
+            return Rfc2898DeriveBytes.Pbkdf2(input, salt, Iterations, HashAlgorithmName.SHA256, HashSize);
         }
     }
 }
