@@ -15,11 +15,12 @@ library is split into **one .NET project/NuGet package per chain**, plus a share
 package — this is deliberate: installing `ARC76Account.Bitcoin` must not drag in `Algorand4`,
 `Nethereum.Signer`, or `NBitcoin.Altcoins`. Don't reintroduce a single merged assembly.
 
-It currently derives accounts for four chains:
+It currently derives accounts for five chains:
 - **Algorand (AVM)** — package `ARC76Account.Algorand`, `ARC76Account.Algorand.ARC76` → `Algorand.Algod.Model.Account` (via the `Algorand4` package). Also ships `ARC76Account.Utils.ARC76Signer`/`IAlgorandSigner` (an ASP.NET Core-friendly transaction signer) and `ARC76Account.Model.Config.ARC76Config` — these are Algorand-specific, so they live here rather than in Core.
 - **Ethereum / EVM** — package `ARC76Account.Ethereum`, `ARC76Account.Ethereum.ARC76` → `Nethereum.Signer.EthECKey`
 - **Bitcoin** — package `ARC76Account.Bitcoin`, `ARC76Account.Bitcoin.ARC76` → `NBitcoin.Key` (native SegWit/bech32 address via `key.PubKey.GetAddress(ScriptPubKeyType.Segwit, network)`, WIF private key via `key.GetWif(network)`)
 - **Bitcoin Cash** — package `ARC76Account.BitcoinCash`, `ARC76Account.BitcoinCash.ARC76` → `NBitcoin.Key` (via the `NBitcoin.Altcoins` package; CashAddr address via `key.PubKey.GetAddress(ScriptPubKeyType.Legacy, NBitcoin.Altcoins.BCash.Instance.Mainnet)` — BCH has no SegWit, so `Legacy` is its only P2PKH type)
+- **Solana** — package `ARC76Account.Solana`, `ARC76Account.Solana.ARC76` → `Solnet.Wallet.Account` (via `Solnet.Wallet` + `Chaos.NaCl.Standard`; the 32-byte ARC76 seed is expanded directly into an Ed25519 keypair via `Chaos.NaCl.Ed25519.KeyPairFromSeed` — no BIP32/BIP44 hierarchical derivation, same "raw seed" approach as the other chains). Address is `.PublicKey` (base58), private key is `.PrivateKey` (base58 of the 64-byte expanded secret key, the format wallets like Phantom export).
 
 Every chain exposes the same shape: `GetAccount(password, slot = 0)` / `GetEmailAccount(email, password, slot = 0)`.
 
@@ -44,8 +45,10 @@ packed).
   - `ARC76.cs` — `ARC76Account.Bitcoin.ARC76`
 - `ARC76Account.BitcoinCash/` (package `ARC76Account.BitcoinCash`) — depends on `ARC76Account.Core`, `NBitcoin`, `NBitcoin.Altcoins`
   - `ARC76.cs` — `ARC76Account.BitcoinCash.ARC76`
-- `TestARC76/` — NUnit test project, `ProjectReference`s all five of the above
-  - `AVMTests.cs`, `EVMTests.cs`, `BitcoinTests.cs`, `BitcoinCashTests.cs` — known-answer tests (fixed password → fixed address/key), one file per chain
+- `ARC76Account.Solana/` (package `ARC76Account.Solana`) — depends on `ARC76Account.Core`, `Solnet.Wallet`, `Chaos.NaCl.Standard`
+  - `ARC76.cs` — `ARC76Account.Solana.ARC76`
+- `TestARC76/` — NUnit test project, `ProjectReference`s all six of the above
+  - `AVMTests.cs`, `EVMTests.cs`, `BitcoinTests.cs`, `BitcoinCashTests.cs`, `SolanaTests.cs` — known-answer tests (fixed password → fixed address/key), one file per chain
   - `ARC76SignerTests.cs` — signer wiring + transaction-signing test
 - `Directory.Build.props` — shared MSBuild/NuGet metadata (TFM, nullable, `GeneratePackageOnBuild`, `Authors`, `PackageProjectUrl`, icon/readme/license packing, **`<Version>`**) for every project in the repo. **Bump the version here, once, for all packages** — don't set per-project `<Version>` overrides unless a single package needs an out-of-band patch release.
 - `README.md` — public usage docs, migration guides, and "adding a new chain" pointer (packed into every NuGet package — keep in sync with the actual namespaces/methods)
@@ -66,8 +69,8 @@ bare/qualified name starting with `Algorand.` must either:
 
 Forgetting this produces confusing "type not found" errors pointing at
 `ARC76Account.Algorand.Address` etc. instead of the SDK type. This does not affect the
-`Ethereum`/`Bitcoin`/`BitcoinCash` namespaces since `Nethereum`/`NBitcoin` don't share a name
-with them.
+`Ethereum`/`Bitcoin`/`BitcoinCash`/`Solana` namespaces since `Nethereum`/`NBitcoin`/`Solnet`
+don't share a name with them.
 
 ## Build & test
 
@@ -106,10 +109,10 @@ tests, so a passing suite is strong evidence the derivation logic is unchanged/c
 
 ## Adding support for a new chain
 
-This is the most common future task shape (Bitcoin and Bitcoin Cash were both added this way).
-Use the `add-chain-support` skill (`.claude/skills/add-chain-support/SKILL.md`) when asked to
-add a new chain — it walks through creating a new `ARC76Account.<Chain>/` project, the tests,
-the README, and the `.sln`/`Directory.Build.props` wiring.
+This is the most common future task shape (Bitcoin, Bitcoin Cash, and Solana were all added
+this way). Use the `add-chain-support` skill (`.claude/skills/add-chain-support/SKILL.md`)
+when asked to add a new chain — it walks through creating a new `ARC76Account.<Chain>/`
+project, the tests, the README, and the `.sln`/`Directory.Build.props` wiring.
 
 ## Security notes
 
@@ -124,10 +127,10 @@ the README, and the `.sln`/`Directory.Build.props` wiring.
 
 The shared `<Version>` lives in `Directory.Build.props` and applies to every package
 (`ARC76Account.Core`, `ARC76Account.Algorand`, `ARC76Account.Ethereum`, `ARC76Account.Bitcoin`,
-`ARC76Account.BitcoinCash`) — bump it there once per release rather than per-project. Each
-project has `GeneratePackageOnBuild=True`, so `dotnet build` produces all five `.nupkg` files.
-Update `README.md` (and add a migration guide entry, if the change is breaking) before
-publishing.
+`ARC76Account.BitcoinCash`, `ARC76Account.Solana`) — bump it there once per release rather than
+per-project. Each project has `GeneratePackageOnBuild=True`, so `dotnet build` produces all six
+`.nupkg` files. Update `README.md` (and add a migration guide entry, if the change is breaking)
+before publishing.
 
 History: package was `AlgorandARC76Account` (single package, namespace
 `AlgorandARC76AccountDotNet`) through v1.x; renamed to `ARC76Account` (single package) at

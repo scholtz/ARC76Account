@@ -1,6 +1,6 @@
 ---
 name: add-chain-support
-description: Use when asked to add ARC76 account derivation support for a new blockchain/chain (e.g. Solana, another EVM-compatible variant) to the ARC76Account library. Walks through the new project, package, and test files that must be created, following the existing per-chain-package pattern (ARC76Account.Algorand, ARC76Account.Ethereum, ARC76Account.Bitcoin, ARC76Account.BitcoinCash).
+description: Use when asked to add ARC76 account derivation support for a new blockchain/chain (e.g. TON, Polkadot, another EVM-compatible variant) to the ARC76Account library. Walks through the new project, package, and test files that must be created, following the existing per-chain-package pattern (ARC76Account.Algorand, ARC76Account.Ethereum, ARC76Account.Bitcoin, ARC76Account.BitcoinCash, ARC76Account.Solana).
 ---
 
 # Add chain support to ARC76Account

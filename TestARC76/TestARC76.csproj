@@ -25,6 +25,7 @@
     <ProjectReference Include="..\ARC76Account.Ethereum\ARC76Account.Ethereum.csproj" />
     <ProjectReference Include="..\ARC76Account.Bitcoin\ARC76Account.Bitcoin.csproj" />
     <ProjectReference Include="..\ARC76Account.BitcoinCash\ARC76Account.BitcoinCash.csproj" />
+    <ProjectReference Include="..\ARC76Account.Solana\ARC76Account.Solana.csproj" />
   </ItemGroup>
 
 </Project>

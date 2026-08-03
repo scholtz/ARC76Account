@@ -17,14 +17,15 @@ dotnet add package ARC76Account.Algorand    # Algorand (AVM)
 dotnet add package ARC76Account.Ethereum    # Ethereum / EVM-compatible chains
 dotnet add package ARC76Account.Bitcoin     # Bitcoin
 dotnet add package ARC76Account.BitcoinCash # Bitcoin Cash
+dotnet add package ARC76Account.Solana      # Solana
 ```
 
 `ARC76Account.Core` (the shared PBKDF2 seed derivation, no chain SDK dependencies) is pulled in
 automatically by each of the above — install it directly only if you're implementing a new
 chain yourself (see [Adding a new chain](#adding-a-new-chain)).
 
-Installing `ARC76Account.Bitcoin` will not pull in `Algorand4`, `Nethereum.Signer`, or
-`NBitcoin.Altcoins` — each package only depends on what its own chain needs.
+Installing `ARC76Account.Bitcoin` will not pull in `Algorand4`, `Nethereum.Signer`,
+`NBitcoin.Altcoins`, or `Solnet.Wallet` — each package only depends on what its own chain needs.
 
 Please tell your users to use a password of at least 50 characters long for best safety —
 this library derives the entire account/private key deterministically from that password, so
@@ -38,6 +39,7 @@ its strength *is* the account's security.
 | Ethereum / EVM     | `ARC76Account.Ethereum`        | `ARC76Account.Ethereum`     | `Nethereum.Signer.EthECKey`        |
 | Bitcoin            | `ARC76Account.Bitcoin`         | `ARC76Account.Bitcoin`      | `NBitcoin.Key`                     |
 | Bitcoin Cash       | `ARC76Account.BitcoinCash`     | `ARC76Account.BitcoinCash`  | `NBitcoin.Key`                     |
+| Solana             | `ARC76Account.Solana`          | `ARC76Account.Solana`       | `Solnet.Wallet.Account`            |
 
 Every chain namespace exposes the same shape:
 
@@ -149,6 +151,32 @@ NBitcoin.Key key = ARC76Account.BitcoinCash.ARC76.GetEmailAccount(
     "12345678901234567890123456789012345678901234567890");
 string address = key.PubKey.GetAddress(ScriptPubKeyType.Legacy, NBitcoin.Altcoins.BCash.Instance.Mainnet).ToString();
 Assert.That(address, Is.EqualTo("bitcoincash:qp6fcyedrugd3l2d4yvzptn9p00hdqup5g7zx5pytw"));
+```
+
+### Solana account from a password
+
+Returns a `Solnet.Wallet.Account`. The ARC76 seed is expanded into an Ed25519 keypair directly
+(the same "raw seed" approach exposed by other SDKs as e.g. `Keypair.fromSeed` — no BIP32/BIP44
+hierarchical derivation). The address is `.PublicKey` (base58), and the private key is
+`.PrivateKey` (base58 of the 64-byte expanded secret key) — the same format wallets like
+Phantom use for private-key export:
+
+```c#
+Solnet.Wallet.Account account = ARC76Account.Solana.ARC76.GetAccount(
+    "12345678901234567890123456789012345678901234567890");
+string address = account.PublicKey.ToString();
+string privateKey = account.PrivateKey.ToString();
+Assert.That(address, Is.EqualTo("4NZNrQAS9gLtqcutnCRfyy63M7XysEzgPP4hFGrutsne"));
+Assert.That(privateKey, Is.EqualTo("3wvbZFR7njig8pAcSaHtzAVXYe779HjwrxCYiXRJS7shfWV6N3bNNynRijtz5WccRfDfhcHF5VTyq8yCv5HMAf34"));
+```
+
+### Solana account from an email + password
+
+```c#
+Solnet.Wallet.Account account = ARC76Account.Solana.ARC76.GetEmailAccount(
+    "email@example.com",
+    "12345678901234567890123456789012345678901234567890");
+Assert.That(account.PublicKey.ToString(), Is.EqualTo("GcsDHS3b2hSUAWb2sU3UYvNWjudn4zas2h969q8C6P8r"));
 ```
 
 ### Same password, two chains

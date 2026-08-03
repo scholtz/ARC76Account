@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Title>ARC76 Account - Solana</Title>
+		<Description>Deterministic ARC76 account derivation for Solana.</Description>
+		<PackageTags>Solana;ARC76;Account generation</PackageTags>
+		<PackageId>ARC76Account.Solana</PackageId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Solnet.Wallet" Version="6.1.0" />
+		<PackageReference Include="Chaos.NaCl.Standard" Version="1.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ARC76Account.Core\ARC76Account.Core.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -20,6 +20,7 @@ dotnet add package ARC76Account.Algorand    # Algorand (AVM)
 dotnet add package ARC76Account.Ethereum    # Ethereum / EVM-compatible chains
 dotnet add package ARC76Account.Bitcoin     # Bitcoin
 dotnet add package ARC76Account.BitcoinCash # Bitcoin Cash
+dotnet add package ARC76Account.Solana      # Solana
 ```
 
 `ARC76Account.Core` comes in transitively — never tell a user to install it unless they're
@@ -30,8 +31,8 @@ Namespaces are unaffected by the v3.0 package split — only the install step ch
 
 **Do not** recommend installing `ARC76Account.Bitcoin` (or any other chain package) when the
 user only asked about a different chain — each package pulls in that chain's SDK
-(`Algorand4`, `Nethereum.Signer`, `NBitcoin`, `NBitcoin.Altcoins`) and nothing else; that
-separation is the reason the packages were split in the first place.
+(`Algorand4`, `Nethereum.Signer`, `NBitcoin`, `NBitcoin.Altcoins`, `Solnet.Wallet`) and nothing
+else; that separation is the reason the packages were split in the first place.
 
 ## What this library does
 
@@ -61,6 +62,7 @@ ARC76Account.<Chain>.ARC76.GetEmailAccount(string email, string password, int sl
 | `ARC76Account.Ethereum`   | `Nethereum.Signer.EthECKey`      | `.GetPublicAddress()`, `.GetPrivateKey()` |
 | `ARC76Account.Bitcoin`    | `NBitcoin.Key`                   | `.PubKey.GetAddress(ScriptPubKeyType.Segwit, network)`, `.GetWif(network)` |
 | `ARC76Account.BitcoinCash`| `NBitcoin.Key`                   | `.PubKey.GetAddress(ScriptPubKeyType.Legacy, NBitcoin.Altcoins.BCash.Instance.Mainnet)`, `.GetWif(network)` |
+| `ARC76Account.Solana`     | `Solnet.Wallet.Account`          | `.PublicKey` (address, base58), `.PrivateKey` (base58 of 64-byte expanded secret key) |
 
 `slot` (default `0`) derives a different, independent account from the same password — use it
 for "account 2", "account 3", etc. under one password, never generate a new password per slot.
@@ -108,6 +110,21 @@ bech32 — always pass the `BCash.Instance.Mainnet` network object, never Bitcoi
 `NBitcoin.Network.Main`, or the address/WIF will be wrong for this chain. Bitcoin Cash has no
 SegWit, so `ScriptPubKeyType.Legacy` is correct here (it is not a deprecated choice on this chain).
 
+### Solana
+
+```c#
+Solnet.Wallet.Account account = ARC76Account.Solana.ARC76.GetAccount(password);
+string address = account.PublicKey.ToString();
+string privateKey = account.PrivateKey.ToString();
+```
+
+The 32-byte ARC76 seed is expanded directly into an Ed25519 keypair (no BIP32/BIP44
+hierarchical derivation, no mnemonic) — the same "raw seed" approach as the other chains in
+this library, analogous to `Keypair.fromSeed` in `@solana/web3.js`. `.PublicKey` is the
+base58-encoded address; `.PrivateKey` is base58 of the 64-byte expanded secret key, the same
+format wallets like Phantom use for private-key export — don't convert it to hex or treat it
+as a raw 32-byte seed.
+
 ### Signing Algorand transactions in an ASP.NET Core app
 
 Use `ARC76Account.Utils.ARC76Signer` (registered via DI) rather than calling `ARC76.GetAccount`
@@ -150,3 +167,7 @@ configuration, never hard-code it.
   Bitcoin and Bitcoin Cash are different networks with different address encodings even though
   both return `NBitcoin.Key`; always pair `ARC76Account.Bitcoin` with `Network.Main` and
   `ARC76Account.BitcoinCash` with `NBitcoin.Altcoins.BCash.Instance.Mainnet`.
+- Doing BIP32/BIP44/mnemonic derivation for a Solana account when the user just wants "an
+  account from this password" — `ARC76Account.Solana.ARC76.GetAccount` already expands the raw
+  ARC76 seed into the keypair directly; don't route it through `Solnet.Wallet.Wallet`'s
+  mnemonic/BIP32 path, which is a different derivation entirely.
