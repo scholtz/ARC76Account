@@ -20,6 +20,14 @@ describe("deriveSeed", () => {
   it("rejects short passwords", async () => {
     await expect(deriveSeed("short")).rejects.toThrow();
   });
+
+  it("rejects non-integer slots", async () => {
+    // Regression test - see audits/2026-08-04-audit-report.md (Low finding): a fractional
+    // slot derives a seed the .NET package's `int slot` parameter cannot represent, so it
+    // must be rejected here rather than silently accepted.
+    await expect(deriveSeed(PASSWORD, 1.5)).rejects.toThrow();
+    await expect(deriveSeed(PASSWORD, NaN)).rejects.toThrow();
+  });
 });
 
 describe("deriveSeedWithEmail", () => {

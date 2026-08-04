@@ -11,6 +11,16 @@ function assertPassword(password: string): void {
   }
 }
 
+// MUST reject non-integers: .NET's `slot` parameter is a 32-bit int and cannot represent a
+// fractional value, so a fractional/NaN slot accepted here would derive an account no other
+// ARC76Account implementation could ever re-derive. See audits/2026-08-04-audit-report.md
+// (Low finding) - do not relax this to allow non-integer input.
+function assertSlot(slot: number): void {
+  if (!Number.isInteger(slot)) {
+    throw new Error(`slot must be an integer, got ${slot}`);
+  }
+}
+
 function getSubtle(): SubtleCrypto {
   const subtle =
     typeof window !== "undefined" && window.crypto?.subtle
@@ -50,6 +60,7 @@ async function pbkdf2(input: string, salt: string): Promise<Uint8Array> {
  */
 export async function deriveSeed(password: string, slot: number = 0): Promise<Uint8Array> {
   assertPassword(password);
+  assertSlot(slot);
   const input = `ARC-0076-${password}-${slot}-PBKDF2-999999`;
   const salt = `ARC-0076-${slot}-PBKDF2-999999`;
   return pbkdf2(input, salt);
@@ -64,6 +75,7 @@ export async function deriveSeedWithEmail(
   slot: number = 0
 ): Promise<Uint8Array> {
   assertPassword(password);
+  assertSlot(slot);
   const input = `ARC-0076-${email}-${password}-${slot}-PBKDF2-999999`;
   const salt = `ARC-0076-${email}-${slot}-PBKDF2-999999`;
   return pbkdf2(input, salt);

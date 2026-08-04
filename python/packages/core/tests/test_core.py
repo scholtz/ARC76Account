@@ -22,6 +22,16 @@ class TestDeriveSeed:
         with pytest.raises(ValueError):
             derive_seed("short")
 
+    def test_rejects_non_integer_slots(self) -> None:
+        # Regression test - see audits/2026-08-04-audit-report.md (Low finding): a fractional
+        # slot derives a seed the .NET package's `int slot` parameter cannot represent, and a
+        # bool slot is almost certainly a caller bug, so both must be rejected rather than
+        # silently accepted (Python's type hints are not enforced at runtime).
+        with pytest.raises(TypeError):
+            derive_seed(PASSWORD, 1.5)  # type: ignore[arg-type]
+        with pytest.raises(TypeError):
+            derive_seed(PASSWORD, True)  # type: ignore[arg-type]
+
 
 class TestDeriveSeedWithEmail:
     def test_differs_from_password_only_seed(self) -> None:
