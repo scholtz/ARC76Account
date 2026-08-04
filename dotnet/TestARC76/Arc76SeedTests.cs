@@ -43,6 +43,33 @@ namespace TestARC76
         }
 
         [Test]
+        public void DeriveIsCultureInvariantForNegativeSlots()
+        {
+            // Regression test - see audits/2026-08-04-audit-report.md (High finding): the
+            // slot was previously interpolated with the current culture's number formatting,
+            // so under cultures whose negative sign is not the ASCII '-' (sv-SE/fi-FI/lt-LT
+            // use U+2212; fa-IR/ar-SA prepend an invisible directional mark) a negative slot
+            // derived a different seed than the same inputs under en-US or in TypeScript.
+            var original = System.Globalization.CultureInfo.CurrentCulture;
+            try
+            {
+                System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+                var invariant = Arc76Seed.Derive(Password, -1);
+                var invariantEmail = Arc76Seed.Derive(Email, Password, -1);
+                foreach (var culture in new[] { "sv-SE", "fa-IR", "ar-SA", "fi-FI", "lt-LT" })
+                {
+                    System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo(culture);
+                    Assert.That(Arc76Seed.Derive(Password, -1), Is.EqualTo(invariant), $"culture {culture}");
+                    Assert.That(Arc76Seed.Derive(Email, Password, -1), Is.EqualTo(invariantEmail), $"culture {culture} (email)");
+                }
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentCulture = original;
+            }
+        }
+
+        [Test]
         public void DeriveWithNonAsciiEmailMatchesUtf8Encoding()
         {
             // Regression test for the Critical finding in audits/2026-08-03-audit-report.md:

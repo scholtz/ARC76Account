@@ -59,8 +59,11 @@ supposedly produced them):
   `ARC76Account.Bitcoin`, `ARC76Account.BitcoinCash`, `ARC76Account.Solana`
 - npm: `@arc76/core`, `@arc76/algorand`, `@arc76/ethereum`, `@arc76/bitcoin`,
   `@arc76/bitcoincash`, `@arc76/solana`
-- (If `python/` has gained a published package by the time you run this, add it to scope —
-  check `python/README.md`'s status first.)
+- PyPI (in scope since audit #3, 2026-08-04 — `python/` is implemented and published):
+  `arc76-core`, `arc76-algorand`, `arc76-ethereum`, `arc76-bitcoin`, `arc76-bitcoincash`,
+  `arc76-solana`. Source: `python/packages/*/` (note `bitcoincash`'s internal
+  `_cashaddr.py` encoder — KAT-locked, review on any change), plus
+  `.github/workflows/publish-pypi.yml` and every `pyproject.toml`.
 
 ### Currently deployed versions
 
@@ -73,18 +76,24 @@ whatever's merely committed to `master`.
 
 | Package                    | Registry | Latest deployed    | Last checked |
 |-----------------------------|----------|---------------------|--------------|
-| `ARC76Account.Core`         | NuGet    | `1.0.2.2026080318`  | 2026-08-03 (audit #2) |
-| `ARC76Account.Algorand`     | NuGet    | `1.0.2.2026080318`  | 2026-08-03 (audit #2) |
-| `ARC76Account.Ethereum`     | NuGet    | `1.0.2.2026080318`  | 2026-08-03 (audit #2) |
-| `ARC76Account.Bitcoin`      | NuGet    | `1.0.1.2026080317`  | 2026-08-03 (audit #2) |
-| `ARC76Account.BitcoinCash`  | NuGet    | `1.0.1.2026080317`  | 2026-08-03 (audit #2) |
-| `ARC76Account.Solana`       | NuGet    | `1.0.1.2026080317`  | 2026-08-03 (audit #2) |
-| `@arc76/core`                | npm      | *not published* — see note | 2026-08-03 (audit #2) |
-| `@arc76/algorand`            | npm      | `1.0.32026080318`   | 2026-08-03 (audit #2) |
-| `@arc76/ethereum`            | npm      | `1.0.32026080318`   | 2026-08-03 (audit #2) |
-| `@arc76/bitcoin`             | npm      | `1.0.32026080318`   | 2026-08-03 (audit #2) |
-| `@arc76/bitcoincash`         | npm      | `1.0.32026080318`   | 2026-08-03 (audit #2) |
-| `@arc76/solana`              | npm      | `1.0.32026080318`   | 2026-08-03 (audit #2) |
+| `ARC76Account.Core`         | NuGet    | `1.0.2.2026080318`  | 2026-08-04 (audit #3) |
+| `ARC76Account.Algorand`     | NuGet    | `1.0.2.2026080318`  | 2026-08-04 (audit #3) |
+| `ARC76Account.Ethereum`     | NuGet    | `1.0.2.2026080318`  | 2026-08-04 (audit #3) |
+| `ARC76Account.Bitcoin`      | NuGet    | `1.0.1.2026080317`  | 2026-08-04 (audit #3) |
+| `ARC76Account.BitcoinCash`  | NuGet    | `1.0.1.2026080317`  | 2026-08-04 (audit #3) |
+| `ARC76Account.Solana`       | NuGet    | `1.0.1.2026080317`  | 2026-08-04 (audit #3) |
+| `@arc76/core`                | npm      | `1.5.2026080320`    | 2026-08-04 (audit #3) |
+| `@arc76/algorand`            | npm      | `1.5.2026080320`    | 2026-08-04 (audit #3) |
+| `@arc76/ethereum`            | npm      | `1.5.2026080320`    | 2026-08-04 (audit #3) |
+| `@arc76/bitcoin`             | npm      | `1.5.2026080320`    | 2026-08-04 (audit #3) |
+| `@arc76/bitcoincash`         | npm      | `1.5.2026080320`    | 2026-08-04 (audit #3) |
+| `@arc76/solana`              | npm      | `1.5.2026080320`    | 2026-08-04 (audit #3) |
+| `arc76-core`                 | PyPI     | `1.1.2026080321`    | 2026-08-04 (audit #3) |
+| `arc76-algorand`             | PyPI     | `1.1.2026080321`    | 2026-08-04 (audit #3) |
+| `arc76-ethereum`             | PyPI     | `1.1.2026080321`    | 2026-08-04 (audit #3) |
+| `arc76-bitcoin`              | PyPI     | `1.1.2026080321`    | 2026-08-04 (audit #3) |
+| `arc76-bitcoincash`          | PyPI     | `1.1.2026080321`    | 2026-08-04 (audit #3) |
+| `arc76-solana`               | PyPI     | `1.1.2026080321`    | 2026-08-04 (audit #3) |
 
 Lookup commands (also in Phase 2 below):
 ```bash
@@ -93,19 +102,22 @@ curl -s "https://api.nuget.org/v3-flatcontainer/<id-lowercase>/index.json"
 
 # npm - latest version of a package
 npm view @arc76/<name> version
+
+# PyPI - latest version of a package
+curl -s "https://pypi.org/pypi/arc76-<name>/json"   # .info.version
 ```
 
-Notes as of 2026-08-03 audit #2 (`audits/2026-08-03-audit-report-2.md`):
-- NuGet `1.0.2.2026080318` (Core/Algorand/Ethereum) contains the audit #1 fixes, verified live
-  by running the shipped DLL. **But** `Bitcoin`/`BitcoinCash`/`Solana` are still `1.0.1` and
-  their nuspec dependency floor pins Core `1.0.1.2026080317` — NuGet's lowest-wins resolution
-  means a fresh install of those three still pulls the **pre-fix, vulnerable Core**. A full
-  republish (e.g. `workflow_dispatch` on `publish-nuget.yml`) is needed.
-- The five published `@arc76/*` npm packages are **uninstallable**: they depend on
-  `@arc76/core@^1.0.0`, which was never published (per-package change detection skipped it).
-  `npm install` of any of them 404s. A full republish (`workflow_dispatch` on
-  `publish-npm.yml`) is needed. Their `1.0.32026080318` version string comes from the
-  pre-`bb4bb45` versioning scheme; the next publish will use `1.{run}.{yyyyMMddHH}`.
+Notes as of 2026-08-04 audit #3 (`audits/2026-08-04-audit-report.md`):
+- npm is fully repaired: all six `@arc76/*` published at `1.5.2026080320`, fresh installs
+  verified working, shipped code verified against known answers (audit #2's High #1 resolved).
+- NuGet `Bitcoin`/`BitcoinCash`/`Solana` are **still** `1.0.1` with a Core floor of
+  `1.0.1.2026080317` — NuGet's lowest-wins resolution means a fresh install of those three
+  still pulls the **pre-fix, vulnerable Core** (re-proven live in audit #3). A
+  `workflow_dispatch` run of `publish-nuget.yml` is still needed; it will also ship audit
+  #3's culture-invariant negative-slot fix to `Arc76Seed.cs` (every Core published so far,
+  1.0.2 included, carries that bug).
+- PyPI entered scope in audit #3: all six `arc76-*` published at `1.1.2026080321`, wheels
+  byte-identical to source, shipped code verified against known answers.
 
 **Documentation**, insofar as it makes security- or entropy-relevant claims a user might rely
 on: root `README.md`, `dotnet/README.md`, `typescript/README.md`, every package README, both
@@ -148,7 +160,8 @@ previous audit covered it — re-verify.
 
 ### 1. Cryptographic core review
 
-- Read `Arc76Seed.cs` and `packages/core/src/index.ts` line by line. Confirm: iteration count,
+- Read `Arc76Seed.cs`, `typescript/packages/core/src/index.ts`, and
+  `python/packages/core/src/arc76/core/__init__.py` line by line. Confirm: iteration count,
   hash algorithm, salt construction, input construction, output length (32 bytes), and that
   there is no code path that silently falls back to a weaker configuration (fewer iterations,
   a faster/weaker hash, a shorter or omitted salt) under any input, including empty string,
@@ -159,7 +172,12 @@ previous audit covered it — re-verify.
   is an automatic Critical finding regardless of how correct it looks.
 - Confirm salt and input are built from the *exact* literal strings above with no extra/missing
   characters, no locale-dependent string formatting (e.g. a `slot` number formatted with
-  thousands separators in some culture), and no encoding mismatch between the salt string and
+  thousands separators in some culture — **test this empirically, not by inspection**: run
+  the derivation with a negative slot under cultures like `sv-SE`/`fa-IR`/`ar-SA` and compare
+  against the TypeScript/Python output; audit #3 found .NET's default interpolation formats
+  the negative sign as U+2212 or with invisible directional marks under exactly those
+  cultures, which code reading alone had passed over in two prior audits), and no encoding
+  mismatch between the salt string and
   the input string (both must be treated as raw UTF-8/ASCII bytes consistently across every
   language implementation).
 - Confirm there is no randomness anywhere in the derivation path. A CSPRNG call anywhere
@@ -173,10 +191,13 @@ just the git repo — a compromised CI runner, a compromised maintainer npm/NuGe
 dependency-confusion attack could all make what's actually installable diverge from what's in
 this repository, without changing a single line here.
 
-- For each of the 12 in-scope packages, find its latest published version:
+- For each of the 18 in-scope packages, find its latest published version:
   - NuGet: `https://api.nuget.org/v3-flatcontainer/{id-lowercase}/index.json`, or
     `dotnet package search`
   - npm: `npm view @arc76/<name> version`, or the registry API
+  - PyPI: `https://pypi.org/pypi/arc76-<name>/json` (`.info.version`); fetch raw wheels via
+    `pip download --no-deps` (Python ships uncompiled — byte-diff the shipped `.py` files
+    against source)
 - Download the actual package artifact (`.nupkg` / npm tarball) — don't rely on `dotnet add`/
   `npm install` alone, fetch the raw file so you can inspect it directly.
 - Unzip/untar it and check:
@@ -276,7 +297,8 @@ lose funds regardless of how correct the cryptography is.
 ### 6. Dependency & supply-chain review
 
 - Run the vulnerability scanners: `dotnet list package --vulnerable --include-transitive` for
-  every .NET project; `npm audit` / `pnpm audit` for the TypeScript workspace. Record every
+  every .NET project; `npm audit` / `pnpm audit` for the TypeScript workspace; `pip-audit`
+  over a fresh install of the published `arc76-*` packages for Python. Record every
   finding, including transitive ones, even if a previous audit dismissed a similar one — CVE
   databases update continuously.
 - For every direct dependency (`Algorand4`, `Nethereum.Signer`, `NBitcoin`,
