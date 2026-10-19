@@ -27,7 +27,7 @@ dotnet add package ARC76Account.Solana      # Solana
 automatically by each of the above — install it directly only if you're implementing a new
 chain yourself (see [Adding a new chain](#adding-a-new-chain)).
 
-Installing `ARC76Account.Bitcoin` will not pull in `Algorand4`, `Nethereum.Signer`,
+Installing `ARC76Account.Bitcoin` will not pull in `Algorand5`, `Nethereum.Signer`,
 `NBitcoin.Altcoins`, or `Solnet.Wallet` — each package only depends on what its own chain needs.
 
 Please tell your users to use a password of at least 50 characters long for best safety —
@@ -265,6 +265,13 @@ or dependencies. See the `add-chain-support` Claude Code skill in this repo
 (repo root: `.claude/skills/add-chain-support/SKILL.md`) for the step-by-step process.
 
 ## Migration guides
+
+### `ARC76Account.Algorand`: `Algorand4` → `Algorand5` SDK
+
+`ARC76Account.Algorand` now depends on the `Algorand5` NuGet package instead of `Algorand4`.
+Both ship an assembly named `Algorand.dll` with the same namespaces, so they cannot be
+referenced side by side. If your project still references `Algorand4` directly, switch it to
+`Algorand5`. If you previously forced `Algorand5` into your output with a direct `Algorand4` reference using `ExcludeAssets="all"`, remove that reference. C# call sites do not change.
 
 ### v2.x → v3.0: one package per chain
 

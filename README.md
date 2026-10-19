@@ -39,7 +39,7 @@ README on the .NET side.
 | Package                                                                    | Chain              | What it depends on               |
 |------------------------------------------------------------------------------|--------------------|-------------------------------------|
 | [`ARC76Account.Core`](https://www.nuget.org/packages/ARC76Account.Core)         | — (shared seed derivation, not usually installed directly) | no chain SDK |
-| [`ARC76Account.Algorand`](https://www.nuget.org/packages/ARC76Account.Algorand) | Algorand (AVM)     | `Algorand4`; also ships `ARC76Signer`/`IAlgorandSigner` for ASP.NET Core |
+| [`ARC76Account.Algorand`](https://www.nuget.org/packages/ARC76Account.Algorand) | Algorand (AVM)     | `Algorand5`; also ships `ARC76Signer`/`IAlgorandSigner` for ASP.NET Core |
 | [`ARC76Account.Ethereum`](https://www.nuget.org/packages/ARC76Account.Ethereum) | Ethereum / EVM     | `Nethereum.Signer`                  |
 | [`ARC76Account.Bitcoin`](https://www.nuget.org/packages/ARC76Account.Bitcoin)   | Bitcoin            | `NBitcoin`                          |
 | [`ARC76Account.BitcoinCash`](https://www.nuget.org/packages/ARC76Account.BitcoinCash) | Bitcoin Cash | `NBitcoin` + `NBitcoin.Altcoins`     |

@@ -301,7 +301,7 @@ lose funds regardless of how correct the cryptography is.
   over a fresh install of the published `arc76-*` packages for Python. Record every
   finding, including transitive ones, even if a previous audit dismissed a similar one — CVE
   databases update continuously.
-- For every direct dependency (`Algorand4`, `Nethereum.Signer`, `NBitcoin`,
+- For every direct dependency (`Algorand5`, `Nethereum.Signer`, `NBitcoin`,
   `NBitcoin.Altcoins`, `Solnet.Wallet`, `Chaos.NaCl.Standard`, `algosdk`, `ethers`,
   `bitcoinjs-lib`, `ecpair`, `tiny-secp256k1`, `cashaddrjs`, `tweetnacl`, `bs58`): confirm it's
   still actively maintained (check last release date), confirm the installed version isn't
