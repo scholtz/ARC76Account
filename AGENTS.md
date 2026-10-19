@@ -48,7 +48,8 @@ implementation and verify other languages against its known-answer test values.
 Python and TypeScript test suites all load it (in addition to their own per-language tests) —
 **never hard-code a known-answer value in only one language**. To add a case, add it to the JSON
 (verify it against the .NET reference implementation) and all three suites pick it up. Changing
-only `test-vectors/` deliberately does not trigger any publish workflow.
+only `test-vectors/` deliberately does not trigger any publish workflow; instead
+`.github/workflows/test-vectors.yml` runs all three languages' suites against the file.
 
 ## Repo layout
 

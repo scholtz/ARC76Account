@@ -116,7 +116,7 @@ describe("shared vectors", () => {
           ? await getFalconAccount(v.password, v.slot)
           : await getEmailFalconAccount(v.email, v.password, v.slot);
       expect(account.address).toBe(v.address);
-      if (v.salt !== undefined) expect(account.salt).toBe(v.salt);
+      expect(account.salt).toBe(v.salt);
     }
   );
 });

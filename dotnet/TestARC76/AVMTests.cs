@@ -94,8 +94,7 @@ namespace TestARC76
                 ? ARC76Account.Algorand.ARC76.GetFalconAccount(v.Password, v.Slot)
                 : ARC76Account.Algorand.ARC76.GetEmailFalconAccount(v.Email, v.Password, v.Slot);
             Assert.That(account.Address.EncodeAsString(), Is.EqualTo(v.Str("address")));
-            if (v.Raw.TryGetProperty("salt", out var salt))
-                Assert.That((int)account.Salt, Is.EqualTo(salt.GetInt32()));
+            Assert.That((int)account.Salt, Is.EqualTo(v.Raw.GetProperty("salt").GetInt32()));
         }
     }
 }

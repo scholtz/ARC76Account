@@ -104,5 +104,4 @@ def test_matches_shared_vector(c: dict) -> None:
 def test_falcon_matches_shared_vector(c: dict) -> None:
     account = _make(c, get_email_falcon_account, get_falcon_account)
     assert account.address == c["address"]
-    if "salt" in c:
-        assert account.salt == c["salt"]
+    assert account.salt == c["salt"]

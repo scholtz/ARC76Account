@@ -1,21 +1,6 @@
-import { deriveSeed, deriveSeedWithEmail } from "./index";
 import { readFileSync } from "fs";
 import { join } from "path";
-
-// Known-answer values are shared with dotnet/ and python/ via test-vectors/arc76-vectors.json
-// (repo root) - never hard-code them here; if the languages diverge, cross-language ARC76
-// compatibility has broken.
-interface Vector {
-  email: string | null;
-  password: string;
-  slot: number;
-  [field: string]: string | number | null;
-}
-const VECTORS = JSON.parse(
-  readFileSync(join(__dirname, "../../../../test-vectors/arc76-vectors.json"), "utf8")
-) as { seeds: Vector[]; accounts: Record<string, Vector[]> };
-const label = (v: Vector) => `${v.email ?? "(no email)"} / slot ${v.slot} / ${v.password.slice(0, 8)}`;
-
+import { deriveSeed, deriveSeedWithEmail } from "./index";
 
 const PASSWORD = "12345678901234567890123456789012345678901234567890";
 const EMAIL = "email@example.com";
@@ -60,6 +45,21 @@ describe("deriveSeedWithEmail", () => {
     expect(Buffer.from(a)).toEqual(Buffer.from(b));
   });
 });
+
+// Extends the literal tests above with the cross-language vectors in test-vectors/arc76-vectors.json
+// (repo root, shared with dotnet/ and python/) - if the languages diverge, cross-language ARC76
+// compatibility has broken.
+interface SharedVector {
+  email: string | null;
+  password: string;
+  slot: number;
+  [field: string]: string | number | null;
+}
+const VECTORS = JSON.parse(
+  readFileSync(join(__dirname, "../../../../test-vectors/arc76-vectors.json"), "utf8")
+) as { seeds: SharedVector[]; accounts: Record<string, SharedVector[]> };
+const label = (v: SharedVector) =>
+  `${v.email ?? "(no email)"} / slot ${v.slot} / ${v.password.slice(0, 8)}`;
 
 describe("shared seed vectors", () => {
   it.each(VECTORS.seeds.map((v) => [label(v), v] as const))("%s", async (_l, v) => {
