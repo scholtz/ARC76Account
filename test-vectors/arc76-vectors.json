@@ -1,5 +1,5 @@
 {
-  "_comment": "Shared cross-language known-answer vectors for dotnet/, typescript/ and python/. The .NET implementation is the reference. Every language's tests must load this file instead of hard-coding values. 'email': null means the password-only overload.",
+  "_comment": "Shared cross-language known-answer vectors for dotnet/, typescript/ and python/. The .NET implementation is the reference. Every language's tests must load this file instead of hard-coding values. 'email': null means the password-only overload. The café (NFD) and café (NFC) seeds must differ: emails are UTF-8 encoded verbatim, never Unicode-normalized.",
   "seeds": [
     {
       "email": null,
@@ -48,6 +48,12 @@
       "password": "12345678901234567890123456789012345678901234567890",
       "slot": 0,
       "seedHex": "32acb0f26d99421a66421be8f1e8adf31826beb3bd828263ad8fd82ad5cf72a2"
+    },
+    {
+      "email": "café@example.com",
+      "password": "12345678901234567890123456789012345678901234567890",
+      "slot": 0,
+      "seedHex": "2f0aeb6fc319fd5a28f9714646f0a56dde45b8a14b4cc2c6b1abc08876143eca"
     }
   ],
   "accounts": {
