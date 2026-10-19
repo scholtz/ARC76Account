@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 import pytest
 
 from arc76.core import derive_seed, derive_seed_with_email
@@ -43,3 +46,24 @@ class TestDeriveSeedWithEmail:
         a = derive_seed_with_email(EMAIL, PASSWORD, 0)
         b = derive_seed_with_email(EMAIL, PASSWORD, 0)
         assert a == b
+
+
+# Known-answer seeds are shared with dotnet/ and typescript/ via test-vectors/arc76-vectors.json
+# (repo root). Includes a non-ASCII email and negative slots (see the audit reports).
+_SEEDS = json.loads(
+    (Path(__file__).resolve().parents[4] / "test-vectors" / "arc76-vectors.json").read_text(
+        encoding="utf-8"
+    )
+)["seeds"]
+
+
+@pytest.mark.parametrize(
+    "c", _SEEDS, ids=[f"{c['email']}-slot{c['slot']}-{c['password'][:8]}" for c in _SEEDS]
+)
+def test_matches_shared_seed_vector(c: dict) -> None:
+    seed = (
+        derive_seed(c["password"], c["slot"])
+        if c["email"] is None
+        else derive_seed_with_email(c["email"], c["password"], c["slot"])
+    )
+    assert seed.hex() == c["seedHex"]

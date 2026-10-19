@@ -41,12 +41,22 @@ them (and bump every affected package's major version), or you silently break cr
 compatibility. When in doubt, treat `dotnet/ARC76Account.Core/Arc76Seed.cs` as the reference
 implementation and verify other languages against its known-answer test values.
 
+## Shared test vectors (cross-language known answers)
+
+`test-vectors/arc76-vectors.json` is the **single source of truth** for known-answer test data
+(seeds, and the Algorand/Falcon/Ethereum/Bitcoin/Bitcoin Cash/Solana accounts). The .NET,
+Python and TypeScript test suites all load it (in addition to their own per-language tests) —
+**never hard-code a known-answer value in only one language**. To add a case, add it to the JSON
+(verify it against the .NET reference implementation) and all three suites pick it up. Changing
+only `test-vectors/` deliberately does not trigger any publish workflow.
+
 ## Repo layout
 
 ```
 dotnet/       .NET libraries — see dotnet/AGENTS.md
 typescript/   TypeScript/JS library — see typescript/AGENTS.md
 python/       Python library — see python/AGENTS.md
+test-vectors/ Shared cross-language known-answer test data (arc76-vectors.json)
 audits/       Security audit reports + AUDITS-INSTRUCTIONS.md - see below
 LICENSE.txt   Single license for the whole repo (all languages)
 README.md     Repo-level overview (this repo's front door)

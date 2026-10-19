@@ -95,7 +95,14 @@ jobs:
       - name: Install package and test dependencies
         if: steps.changed.outputs.changed == 'true'
         working-directory: python/packages/${{ matrix.package }}
-        run: python -m pip install -e . pytest
+        # The Falcon tests in arc76-algorand need the optional `falcon` extra (algorand-falcon + py-algorand-sdk>=2.12), otherwise they fail
+        # with ModuleNotFoundError: algorand_falcon.
+        run: |
+          if [ "${{ matrix.package }}" = "algorand" ]; then
+            python -m pip install -e ".[falcon]" pytest
+          else
+            python -m pip install -e . pytest
+          fi
 
       - name: Test
         if: steps.changed.outputs.changed == 'true'

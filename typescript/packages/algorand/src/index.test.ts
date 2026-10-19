@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { encodeAddress } from "algosdk";
 import { verifyCompressed, signCompressed } from "falcon-1024";
 import {
@@ -80,4 +82,41 @@ describe("Falcon accounts", () => {
     const acc = await getFalconAccount(`parity-password-${slot}`, slot);
     expect([acc.address, acc.salt]).toEqual([address, salt]);
   });
+});
+
+// Extends the literal tests above with the cross-language vectors in test-vectors/arc76-vectors.json
+// (repo root, shared with dotnet/ and python/) - if the languages diverge, cross-language ARC76
+// compatibility has broken.
+interface SharedVector {
+  email: string | null;
+  password: string;
+  slot: number;
+  [field: string]: string | number | null;
+}
+const VECTORS = JSON.parse(
+  readFileSync(join(__dirname, "../../../../test-vectors/arc76-vectors.json"), "utf8")
+) as { seeds: SharedVector[]; accounts: Record<string, SharedVector[]> };
+const label = (v: SharedVector) =>
+  `${v.email ?? "(no email)"} / slot ${v.slot} / ${v.password.slice(0, 8)}`;
+
+describe("shared vectors", () => {
+  it.each(VECTORS.accounts.algorand.map((v) => [label(v), v] as const))("%s", async (_l, v) => {
+    const account =
+      v.email === null
+        ? await getAccount(v.password, v.slot)
+        : await getEmailAccount(v.email, v.password, v.slot);
+    expect(encodeAddress(account.addr.publicKey)).toBe(v.address);
+  });
+
+  it.each(VECTORS.accounts.falcon.map((v) => [label(v), v] as const))(
+    "falcon: %s",
+    async (_l, v) => {
+      const account =
+        v.email === null
+          ? await getFalconAccount(v.password, v.slot)
+          : await getEmailFalconAccount(v.email, v.password, v.slot);
+      expect(account.address).toBe(v.address);
+      if (v.salt !== undefined) expect(account.salt).toBe(v.salt);
+    }
+  );
 });

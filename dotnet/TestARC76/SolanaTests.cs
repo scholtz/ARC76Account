@@ -25,5 +25,17 @@ namespace TestARC76
             Assert.That(account.PublicKey.ToString(), Is.EqualTo("D9cyFwbaGdDd1Lo3MJbL6VULN8r4p3c2jrWURTUV7kB"));
             Assert.That(account.PrivateKey.ToString(), Is.EqualTo("2WT1aN7vJse9uykpD6kgZs5zUovYKUxDKDEswPwEa9JnLgrEKseRQpxatFXfDHs9UohZB9A7qGRRZdBGzkWSi8K9"));
         }
+
+        // Extends the literal tests above with the cross-language vectors in
+        // test-vectors/arc76-vectors.json (shared with Python/TypeScript).
+        [TestCaseSource(typeof(Vectors), nameof(Vectors.SolanaCases))]
+        public void MatchesSharedVector(Vector v)
+        {
+            var account = v.Email is null
+                ? ARC76Account.Solana.ARC76.GetAccount(v.Password, v.Slot)
+                : ARC76Account.Solana.ARC76.GetEmailAccount(v.Email, v.Password, v.Slot);
+            Assert.That(account.PublicKey.ToString(), Is.EqualTo(v.Str("publicKey")));
+            Assert.That(account.PrivateKey.ToString(), Is.EqualTo(v.Str("secretKey")));
+        }
     }
 }

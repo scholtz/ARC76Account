@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { getAccount, getEmailAccount } from "./index";
 
 const PASSWORD = "12345678901234567890123456789012345678901234567890";
@@ -32,5 +34,31 @@ describe("getEmailAccount", () => {
     expect(account.privateKey).toBe(
       "0xe1078b9af5d2b58abc819135f6b8f358a3a36dd04d4707eb51f481d766a86915"
     );
+  });
+});
+
+// Extends the literal tests above with the cross-language vectors in test-vectors/arc76-vectors.json
+// (repo root, shared with dotnet/ and python/) - if the languages diverge, cross-language ARC76
+// compatibility has broken.
+interface SharedVector {
+  email: string | null;
+  password: string;
+  slot: number;
+  [field: string]: string | number | null;
+}
+const VECTORS = JSON.parse(
+  readFileSync(join(__dirname, "../../../../test-vectors/arc76-vectors.json"), "utf8")
+) as { seeds: SharedVector[]; accounts: Record<string, SharedVector[]> };
+const label = (v: SharedVector) =>
+  `${v.email ?? "(no email)"} / slot ${v.slot} / ${v.password.slice(0, 8)}`;
+
+describe("shared vectors", () => {
+  it.each(VECTORS.accounts.ethereum.map((v) => [label(v), v] as const))("%s", async (_l, v) => {
+    const account =
+      v.email === null
+        ? await getAccount(v.password, v.slot)
+        : await getEmailAccount(v.email, v.password, v.slot);
+    expect(account.address).toBe(v.address);
+    expect(account.privateKey).toBe("0x" + v.privateKeyHex);
   });
 });

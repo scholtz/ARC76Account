@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import * as bitcoin from "bitcoinjs-lib";
 import { encode } from "cashaddrjs";
 import { getAccount, getEmailAccount } from "./index";
@@ -39,5 +41,31 @@ describe("getEmailAccount", () => {
       "bitcoincash:qp6fcyedrugd3l2d4yvzptn9p00hdqup5g7zx5pytw"
     );
     expect(account.toWIF()).toBe("L4m915x48Hasve5Dzc2BnJuUaxX85xWeF8PtUo5dP234VtSZjDtL");
+  });
+});
+
+// Extends the literal tests above with the cross-language vectors in test-vectors/arc76-vectors.json
+// (repo root, shared with dotnet/ and python/) - if the languages diverge, cross-language ARC76
+// compatibility has broken.
+interface SharedVector {
+  email: string | null;
+  password: string;
+  slot: number;
+  [field: string]: string | number | null;
+}
+const VECTORS = JSON.parse(
+  readFileSync(join(__dirname, "../../../../test-vectors/arc76-vectors.json"), "utf8")
+) as { seeds: SharedVector[]; accounts: Record<string, SharedVector[]> };
+const label = (v: SharedVector) =>
+  `${v.email ?? "(no email)"} / slot ${v.slot} / ${v.password.slice(0, 8)}`;
+
+describe("shared vectors", () => {
+  it.each(VECTORS.accounts.bitcoincash.map((v) => [label(v), v] as const))("%s", async (_l, v) => {
+    const account =
+      v.email === null
+        ? await getAccount(v.password, v.slot)
+        : await getEmailAccount(v.email, v.password, v.slot);
+    expect(addressOf(account.publicKey)).toBe(v.address);
+    expect(account.toWIF()).toBe(v.wif);
   });
 });

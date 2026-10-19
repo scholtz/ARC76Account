@@ -1,4 +1,21 @@
 import { deriveSeed, deriveSeedWithEmail } from "./index";
+import { readFileSync } from "fs";
+import { join } from "path";
+
+// Known-answer values are shared with dotnet/ and python/ via test-vectors/arc76-vectors.json
+// (repo root) - never hard-code them here; if the languages diverge, cross-language ARC76
+// compatibility has broken.
+interface Vector {
+  email: string | null;
+  password: string;
+  slot: number;
+  [field: string]: string | number | null;
+}
+const VECTORS = JSON.parse(
+  readFileSync(join(__dirname, "../../../../test-vectors/arc76-vectors.json"), "utf8")
+) as { seeds: Vector[]; accounts: Record<string, Vector[]> };
+const label = (v: Vector) => `${v.email ?? "(no email)"} / slot ${v.slot} / ${v.password.slice(0, 8)}`;
+
 
 const PASSWORD = "12345678901234567890123456789012345678901234567890";
 const EMAIL = "email@example.com";
@@ -41,5 +58,15 @@ describe("deriveSeedWithEmail", () => {
     const a = await deriveSeedWithEmail(EMAIL, PASSWORD, 0);
     const b = await deriveSeedWithEmail(EMAIL, PASSWORD, 0);
     expect(Buffer.from(a)).toEqual(Buffer.from(b));
+  });
+});
+
+describe("shared seed vectors", () => {
+  it.each(VECTORS.seeds.map((v) => [label(v), v] as const))("%s", async (_l, v) => {
+    const seed =
+      v.email === null
+        ? await deriveSeed(v.password, v.slot)
+        : await deriveSeedWithEmail(v.email, v.password, v.slot);
+    expect(Buffer.from(seed).toString("hex")).toBe(v.seedHex);
   });
 });

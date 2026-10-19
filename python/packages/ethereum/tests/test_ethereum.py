@@ -1,3 +1,8 @@
+import json
+from pathlib import Path
+
+import pytest
+
 from arc76.ethereum import get_account, get_email_account
 
 PASSWORD = "12345678901234567890123456789012345678901234567890"
@@ -33,3 +38,32 @@ class TestGetEmailAccount:
             account.key.hex()
             == "e1078b9af5d2b58abc819135f6b8f358a3a36dd04d4707eb51f481d766a86915"
         )
+
+
+# Extends the literal tests above with the cross-language vectors in test-vectors/arc76-vectors.json
+# (repo root, shared with dotnet/ and typescript/) - if the languages diverge, cross-language
+# ARC76 compatibility has broken.
+_VECTORS = json.loads(
+    (Path(__file__).resolve().parents[4] / "test-vectors" / "arc76-vectors.json").read_text(
+        encoding="utf-8"
+    )
+)
+
+
+def _ids(cases: list) -> list:
+    return [f"{c['email']}-slot{c['slot']}-{c['password'][:8]}" for c in cases]
+
+
+def _make(c: dict, with_email, without_email):
+    if c["email"] is None:
+        return without_email(c["password"], c["slot"])
+    return with_email(c["email"], c["password"], c["slot"])
+
+_CASES = _VECTORS["accounts"]["ethereum"]
+
+
+@pytest.mark.parametrize("c", _CASES, ids=_ids(_CASES))
+def test_matches_shared_vector(c: dict) -> None:
+    account = _make(c, get_email_account, get_account)
+    assert account.address == c["address"]
+    assert account.key.hex() == c["privateKeyHex"]
