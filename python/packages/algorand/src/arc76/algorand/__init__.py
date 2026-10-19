@@ -83,18 +83,21 @@ def _falcon_from_seed(seed: bytes) -> AlgorandFalconAccount:
     # Imported lazily: the Falcon dependencies are the optional `arc76-algorand[falcon]` extra.
     try:
         from algorand_falcon.falcon1024 import Signer
-    except ImportError as e:  # pragma: no cover - exercised only without the extra installed
+        from algosdk import constants, encoding
+
+        scheme = constants.falcon_1024_scheme
+        seed_prefix = constants.pq_seed_prefix
+        address_from_pq_key = encoding.address_from_pq_key
+    except (ImportError, AttributeError) as e:  # pragma: no cover - only without the extra
         raise ImportError(
             "Falcon support requires the optional dependencies: pip install 'arc76-algorand[falcon]'"
         ) from e
-    from algosdk import constants, encoding
 
     # Same derivation as Algorand's standard Falcon accounts (algosdk.mnemonic.to_pq_seed, and
     # .NET's FalconAccount.FromEntropy): keygen seed = SHA-512/256("PQK" + scheme + seed).
-    scheme = constants.falcon_1024_scheme
-    keygen_seed = encoding.checksum(constants.pq_seed_prefix + scheme + seed)
+    keygen_seed = encoding.checksum(seed_prefix + scheme + seed)
     signer = Signer.generate(keygen_seed)
-    address, salt = encoding.address_from_pq_key(scheme, signer.public_key)
+    address, salt = address_from_pq_key(scheme, signer.public_key)
     return AlgorandFalconAccount(
         address=address,
         public_key=signer.public_key,
