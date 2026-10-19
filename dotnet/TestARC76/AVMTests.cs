@@ -43,6 +43,18 @@ namespace TestARC76
             var account = ARC76Account.Algorand.ARC76.GetFalconAccount(Password, 1);
             Assert.That(account.Address.EncodeAsString(), Is.EqualTo("CV2LVHMWDQ625SKQOWQHYZN453MZ22R3V2DO5HFU6UDUZVDKGZJES4HFC4"));
         }
+        // Cross-language vectors covering several canonical salts (0-6) - the salt search depends on an
+        // Ed25519 point test that is re-implemented in the Python and TypeScript packages.
+        [TestCase(6, "SQUKPUF5WNY2Y5VWPKEDVM2KGH2LPML6PIQMOFIRBTMHJTEC4BXLEPM4XI", 4)]
+        [TestCase(7, "LWTOIX3ZCF4UDNFTS4A5S7436MT3QTFIFVSLQGVLODOYTVT6BVUUKGI2NU", 1)]
+        [TestCase(9, "U6MYURHZFMNYLTUTOLBAHD7LNMT4WQ572GUHZOW7RJFGD6CYVDJNHDY2AU", 6)]
+        [TestCase(18, "QR3WQTKMSN6IW7SIM3OD3WXA4G57AG3YOBKTKH4R2UAU32KABR2ZA4LMD4", 2)]
+        public void GetFalconAccountParityVectors(int slot, string address, int salt)
+        {
+            var account = ARC76Account.Algorand.ARC76.GetFalconAccount("parity-password-" + slot, slot);
+            Assert.That(account.Address.EncodeAsString(), Is.EqualTo(address));
+            Assert.That((int)account.Salt, Is.EqualTo(salt));
+        }
         [Test]
         public void FalconAccountIsDeterministicAndDistinctFromEd25519()
         {

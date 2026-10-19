@@ -6,7 +6,7 @@ https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0076.md
 from __future__ import annotations
 
 import base64
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import nacl.signing
 from algosdk import account as algosdk_account
@@ -75,7 +75,7 @@ class AlgorandFalconAccount:
 
     address: str
     public_key: bytes
-    private_key: bytes
+    private_key: bytes = field(repr=False)  # keep the secret out of repr()/tracebacks
     salt: int
 
 

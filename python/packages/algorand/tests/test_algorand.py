@@ -30,6 +30,14 @@ class TestGetEmailAccount:
 
 # Falcon-1024 known-answer values shared with dotnet/TestARC76/AVMTests.cs and
 # typescript/packages/algorand/src/index.test.ts.
+PARITY = [
+    (6, "SQUKPUF5WNY2Y5VWPKEDVM2KGH2LPML6PIQMOFIRBTMHJTEC4BXLEPM4XI", 4),
+    (7, "LWTOIX3ZCF4UDNFTS4A5S7436MT3QTFIFVSLQGVLODOYTVT6BVUUKGI2NU", 1),
+    (9, "U6MYURHZFMNYLTUTOLBAHD7LNMT4WQ572GUHZOW7RJFGD6CYVDJNHDY2AU", 6),
+    (18, "QR3WQTKMSN6IW7SIM3OD3WXA4G57AG3YOBKTKH4R2UAU32KABR2ZA4LMD4", 2),
+]
+
+
 class TestFalconAccount:
     def test_matches_known_password_derived_address(self) -> None:
         acc = get_falcon_account(PASSWORD)
@@ -51,3 +59,8 @@ class TestFalconAccount:
         assert len(acc.public_key) == 1793 and len(acc.private_key) == 2305
         signer = Signer(acc.private_key)
         assert signer.verifying_key().is_valid(b"hi", signer.sign(b"hi"))
+
+    def test_parity_vectors_cover_several_salts(self) -> None:
+        for slot, address, salt in PARITY:
+            acc = get_falcon_account(f"parity-password-{slot}", slot)
+            assert (acc.address, acc.salt) == (address, salt)

@@ -41,6 +41,13 @@ describe("getEmailAccount", () => {
 
 // Falcon-1024 known-answer values shared with dotnet/TestARC76/AVMTests.cs and
 // python/packages/algorand/tests/test_algorand.py.
+const PARITY: Array<[number, string, number]> = [
+  [6, "SQUKPUF5WNY2Y5VWPKEDVM2KGH2LPML6PIQMOFIRBTMHJTEC4BXLEPM4XI", 4],
+  [7, "LWTOIX3ZCF4UDNFTS4A5S7436MT3QTFIFVSLQGVLODOYTVT6BVUUKGI2NU", 1],
+  [9, "U6MYURHZFMNYLTUTOLBAHD7LNMT4WQ572GUHZOW7RJFGD6CYVDJNHDY2AU", 6],
+  [18, "QR3WQTKMSN6IW7SIM3OD3WXA4G57AG3YOBKTKH4R2UAU32KABR2ZA4LMD4", 2],
+];
+
 describe("Falcon accounts", () => {
   it("matches the known password-derived address", async () => {
     expect((await getFalconAccount(PASSWORD)).address).toBe(
@@ -67,5 +74,10 @@ describe("Falcon accounts", () => {
     expect(acc.privateKey.length).toBe(2305);
     const msg = new TextEncoder().encode("hi");
     expect(verifyCompressed(acc.publicKey, signCompressed(acc.privateKey, msg), msg)).toBe(true);
+  });
+
+  it.each(PARITY)("matches the cross-language parity vector for slot %i", async (slot, address, salt) => {
+    const acc = await getFalconAccount(`parity-password-${slot}`, slot);
+    expect([acc.address, acc.salt]).toEqual([address, salt]);
   });
 });
