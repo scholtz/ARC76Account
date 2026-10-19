@@ -26,5 +26,17 @@ namespace TestARC76
             Assert.That(account.GetPublicAddress(), Is.EqualTo("0x90a4b3436c28dBD111130683bacd4948B06A4544"));
             Assert.That(account.GetPrivateKey(), Is.EqualTo("0x4b698752e1f979bd51179faec7e59dcf7552d2724dd5a0b7a024d0ca536e4130"));
         }
+
+        // Extends the literal tests above with the cross-language vectors in
+        // test-vectors/arc76-vectors.json (shared with Python/TypeScript).
+        [TestCaseSource(typeof(Vectors), nameof(Vectors.EthereumCases))]
+        public void MatchesSharedVector(Vector v)
+        {
+            var account = v.Email is null
+                ? ARC76Account.Ethereum.ARC76.GetAccount(v.Password, v.Slot)
+                : ARC76Account.Ethereum.ARC76.GetEmailAccount(v.Email, v.Password, v.Slot);
+            Assert.That(account.GetPublicAddress(), Is.EqualTo(v.Str("address")));
+            Assert.That(account.GetPrivateKey(), Is.EqualTo("0x" + v.Str("privateKeyHex")));
+        }
     }
 }

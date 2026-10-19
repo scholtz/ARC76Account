@@ -30,5 +30,18 @@ namespace TestARC76
             Assert.That(address.ToString(), Is.EqualTo("bc1q0l7cwnvtfwt538vv9yreuyrxuamgl470fkl8j0"));
             Assert.That(key.GetWif(Network.Main).ToString(), Is.EqualTo("KykJVUYMpC2xCrUb8dENcRP3cvQHt6BQCskrkJvyW7fvGEVxpgWA"));
         }
+
+        // Extends the literal tests above with the cross-language vectors in
+        // test-vectors/arc76-vectors.json (shared with Python/TypeScript).
+        [TestCaseSource(typeof(Vectors), nameof(Vectors.BitcoinCases))]
+        public void MatchesSharedVector(Vector v)
+        {
+            var key = v.Email is null
+                ? ARC76Account.Bitcoin.ARC76.GetAccount(v.Password, v.Slot)
+                : ARC76Account.Bitcoin.ARC76.GetEmailAccount(v.Email, v.Password, v.Slot);
+            var address = key.PubKey.GetAddress(ScriptPubKeyType.Segwit, Network.Main);
+            Assert.That(address.ToString(), Is.EqualTo(v.Str("address")));
+            Assert.That(key.GetWif(Network.Main).ToString(), Is.EqualTo(v.Str("wif")));
+        }
     }
 }

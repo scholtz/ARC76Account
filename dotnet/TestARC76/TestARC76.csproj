@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\..\test-vectors\arc76-vectors.json" Link="arc76-vectors.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ARC76Account.Core\ARC76Account.Core.csproj" />
     <ProjectReference Include="..\ARC76Account.Algorand\ARC76Account.Algorand.csproj" />
     <ProjectReference Include="..\ARC76Account.Ethereum\ARC76Account.Ethereum.csproj" />

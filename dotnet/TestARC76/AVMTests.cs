@@ -75,5 +75,26 @@ namespace TestARC76
             var msg = new byte[] { 1, 2, 3 };
             Assert.That(account.SignPQRawBytes(msg).Verify(msg), Is.True);
         }
+
+        // Extends the literal tests above with the cross-language vectors in
+        // test-vectors/arc76-vectors.json (shared with Python/TypeScript).
+        [TestCaseSource(typeof(Vectors), nameof(Vectors.AlgorandCases))]
+        public void MatchesSharedVector(Vector v)
+        {
+            var account = v.Email is null
+                ? ARC76Account.Algorand.ARC76.GetAccount(v.Password, v.Slot)
+                : ARC76Account.Algorand.ARC76.GetEmailAccount(v.Email, v.Password, v.Slot);
+            Assert.That(account.Address.EncodeAsString(), Is.EqualTo(v.Str("address")));
+        }
+
+        [TestCaseSource(typeof(Vectors), nameof(Vectors.FalconCases))]
+        public void FalconMatchesSharedVector(Vector v)
+        {
+            var account = v.Email is null
+                ? ARC76Account.Algorand.ARC76.GetFalconAccount(v.Password, v.Slot)
+                : ARC76Account.Algorand.ARC76.GetEmailFalconAccount(v.Email, v.Password, v.Slot);
+            Assert.That(account.Address.EncodeAsString(), Is.EqualTo(v.Str("address")));
+            Assert.That((int)account.Salt, Is.EqualTo(v.Raw.GetProperty("salt").GetInt32()));
+        }
     }
 }

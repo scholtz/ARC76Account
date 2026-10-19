@@ -7,6 +7,14 @@ namespace TestARC76
         private const string Password = "12345678901234567890123456789012345678901234567890";
         private const string Email = "email@example.com";
 
+        // Known-answer seeds come from test-vectors/arc76-vectors.json (shared with Python/TypeScript).
+        [TestCaseSource(typeof(Vectors), nameof(Vectors.SeedCases))]
+        public void DeriveMatchesSharedVector(Vector v)
+        {
+            var seed = v.Email is null ? Arc76Seed.Derive(v.Password, v.Slot) : Arc76Seed.Derive(v.Email, v.Password, v.Slot);
+            Assert.That(Convert.ToHexString(seed).ToLowerInvariant(), Is.EqualTo(v.Str("seedHex")));
+        }
+
         [Test]
         public void DeriveIsDeterministic()
         {

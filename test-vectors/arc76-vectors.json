@@ -1,0 +1,224 @@
+{
+  "_comment": "Shared cross-language known-answer vectors for dotnet/, typescript/ and python/. The .NET implementation is the reference. Every language's tests must load this file instead of hard-coding values. 'email': null means the password-only overload. The café (NFD) and café (NFC) seeds must differ: emails are UTF-8 encoded verbatim, never Unicode-normalized.",
+  "seeds": [
+    {
+      "email": null,
+      "password": "12345678901234567890123456789012345678901234567890",
+      "slot": 0,
+      "seedHex": "9365ff3d966fdb3b8765e27007677440e67382ed4503c2d00a39638548e13c22"
+    },
+    {
+      "email": null,
+      "password": "12345678901234567890123456789012345678901234567890",
+      "slot": 1,
+      "seedHex": "4b698752e1f979bd51179faec7e59dcf7552d2724dd5a0b7a024d0ca536e4130"
+    },
+    {
+      "email": "email@example.com",
+      "password": "12345678901234567890123456789012345678901234567890",
+      "slot": 0,
+      "seedHex": "e1078b9af5d2b58abc819135f6b8f358a3a36dd04d4707eb51f481d766a86915"
+    },
+    {
+      "email": "email@example.com",
+      "password": "12345678901234567890123456789012345678901234567890",
+      "slot": 1,
+      "seedHex": "46269053f28195baca2f2bb7cf3c446becedd45c86912f3c4ecd0d5ac0dbff76"
+    },
+    {
+      "email": null,
+      "password": "12345678901234567890123456789012345678901234567890",
+      "slot": -1,
+      "seedHex": "ed92500ed5a3d51e2b01cc2813d87c5d8e44cb3b5f6f58b90692c6f48908c874"
+    },
+    {
+      "email": "email@example.com",
+      "password": "12345678901234567890123456789012345678901234567890",
+      "slot": -1,
+      "seedHex": "6395b5bc79de26874c60b369a16b0c25fd8bab487fc5abb6841a43eeda91751f"
+    },
+    {
+      "email": "café@example.com",
+      "password": "12345678901234567890123456789012345678901234567890",
+      "slot": 0,
+      "seedHex": "ed15e3fb5755a05d4d3a2b89ceff14808b7f9b065ea0b2e901fff55bbaf39aa6"
+    },
+    {
+      "email": "cafè@example.com",
+      "password": "12345678901234567890123456789012345678901234567890",
+      "slot": 0,
+      "seedHex": "32acb0f26d99421a66421be8f1e8adf31826beb3bd828263ad8fd82ad5cf72a2"
+    },
+    {
+      "email": "café@example.com",
+      "password": "12345678901234567890123456789012345678901234567890",
+      "slot": 0,
+      "seedHex": "2f0aeb6fc319fd5a28f9714646f0a56dde45b8a14b4cc2c6b1abc08876143eca"
+    }
+  ],
+  "accounts": {
+    "algorand": [
+      {
+        "email": null,
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 0,
+        "address": "GIMN3RFDRRWFD7KIFSVRMXC4JXYD5ZXKT7KSN57OG4RAZPPC3L3YDM46NQ"
+      },
+      {
+        "email": "email@example.com",
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 0,
+        "address": "5AHWQJ5D52K4GRW4JWQ5GMR53F7PDSJEGT4PXVFSBQYE7VXDVG3WSPWSBM"
+      },
+      {
+        "email": null,
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 1,
+        "address": "AMOLO4ICDKCOLFVJXAVIQ23TA27P3LW4AHJP54LLNV4JPIAFKBYLH3SGVQ"
+      }
+    ],
+    "falcon": [
+      {
+        "email": null,
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 0,
+        "address": "BGIJDJONAAYPYPJSZX6EWMH24VMU7CDAOUNCPCIXQ4KYYJG3QMXWNVWOWE",
+        "salt": 0
+      },
+      {
+        "email": "email@example.com",
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 0,
+        "address": "TD5NFW5MEPGAT4S2AIN6XK5DIPJQMCOVN3272HJUJPPG3TB52MNFESSRXA",
+        "salt": 1
+      },
+      {
+        "email": null,
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 1,
+        "address": "CV2LVHMWDQ625SKQOWQHYZN453MZ22R3V2DO5HFU6UDUZVDKGZJES4HFC4",
+        "salt": 2
+      },
+      {
+        "email": null,
+        "password": "parity-password-6",
+        "slot": 6,
+        "address": "SQUKPUF5WNY2Y5VWPKEDVM2KGH2LPML6PIQMOFIRBTMHJTEC4BXLEPM4XI",
+        "salt": 4
+      },
+      {
+        "email": null,
+        "password": "parity-password-7",
+        "slot": 7,
+        "address": "LWTOIX3ZCF4UDNFTS4A5S7436MT3QTFIFVSLQGVLODOYTVT6BVUUKGI2NU",
+        "salt": 1
+      },
+      {
+        "email": null,
+        "password": "parity-password-9",
+        "slot": 9,
+        "address": "U6MYURHZFMNYLTUTOLBAHD7LNMT4WQ572GUHZOW7RJFGD6CYVDJNHDY2AU",
+        "salt": 6
+      },
+      {
+        "email": null,
+        "password": "parity-password-18",
+        "slot": 18,
+        "address": "QR3WQTKMSN6IW7SIM3OD3WXA4G57AG3YOBKTKH4R2UAU32KABR2ZA4LMD4",
+        "salt": 2
+      }
+    ],
+    "ethereum": [
+      {
+        "email": null,
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 0,
+        "address": "0x6fD4983EaC3F958d1BF2009be4FCc0E8792A8AC6",
+        "privateKeyHex": "9365ff3d966fdb3b8765e27007677440e67382ed4503c2d00a39638548e13c22"
+      },
+      {
+        "email": "email@example.com",
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 0,
+        "address": "0x0b6CEF2E7844F27019Fce92205F5FedF684c6926",
+        "privateKeyHex": "e1078b9af5d2b58abc819135f6b8f358a3a36dd04d4707eb51f481d766a86915"
+      },
+      {
+        "email": null,
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 1,
+        "address": "0x90a4b3436c28dBD111130683bacd4948B06A4544",
+        "privateKeyHex": "4b698752e1f979bd51179faec7e59dcf7552d2724dd5a0b7a024d0ca536e4130"
+      }
+    ],
+    "bitcoin": [
+      {
+        "email": null,
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 0,
+        "address": "bc1qudvfvw05l2a90kkl2xdjkh08egyt50ekkprkas",
+        "wif": "L2AEXy6SztUrAa6bMZLyamdbF6xdALS6pUWBct6JKRLz9xDsm57Z"
+      },
+      {
+        "email": "email@example.com",
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 0,
+        "address": "bc1qwjwpxtglzrv06ndfrqs2uegtmamg8qdzy3mghk",
+        "wif": "L4m915x48Hasve5Dzc2BnJuUaxX85xWeF8PtUo5dP234VtSZjDtL"
+      },
+      {
+        "email": null,
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 1,
+        "address": "bc1q0l7cwnvtfwt538vv9yreuyrxuamgl470fkl8j0",
+        "wif": "KykJVUYMpC2xCrUb8dENcRP3cvQHt6BQCskrkJvyW7fvGEVxpgWA"
+      }
+    ],
+    "bitcoincash": [
+      {
+        "email": null,
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 0,
+        "address": "bitcoincash:qr34393e7nat5476magek26aul9q3w3lxc4hph4ljz",
+        "wif": "L2AEXy6SztUrAa6bMZLyamdbF6xdALS6pUWBct6JKRLz9xDsm57Z"
+      },
+      {
+        "email": "email@example.com",
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 0,
+        "address": "bitcoincash:qp6fcyedrugd3l2d4yvzptn9p00hdqup5g7zx5pytw",
+        "wif": "L4m915x48Hasve5Dzc2BnJuUaxX85xWeF8PtUo5dP234VtSZjDtL"
+      },
+      {
+        "email": null,
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 1,
+        "address": "bitcoincash:qpllmp6d3d9ewjya3s5s08ssvmnhdr7heuv0dvkuds",
+        "wif": "KykJVUYMpC2xCrUb8dENcRP3cvQHt6BQCskrkJvyW7fvGEVxpgWA"
+      }
+    ],
+    "solana": [
+      {
+        "email": null,
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 0,
+        "publicKey": "4NZNrQAS9gLtqcutnCRfyy63M7XysEzgPP4hFGrutsne",
+        "secretKey": "3wvbZFR7njig8pAcSaHtzAVXYe779HjwrxCYiXRJS7shfWV6N3bNNynRijtz5WccRfDfhcHF5VTyq8yCv5HMAf34"
+      },
+      {
+        "email": "email@example.com",
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 0,
+        "publicKey": "GcsDHS3b2hSUAWb2sU3UYvNWjudn4zas2h969q8C6P8r",
+        "secretKey": "5Vwqas2RYTc5iq4eN4cvx79AfZPY7ygvLt2AtQ5eMdzT9ZgeLDu57m2tpnyw7Z53TtZknyEs1qUMvfwhUkVeDLhC"
+      },
+      {
+        "email": null,
+        "password": "12345678901234567890123456789012345678901234567890",
+        "slot": 1,
+        "publicKey": "D9cyFwbaGdDd1Lo3MJbL6VULN8r4p3c2jrWURTUV7kB",
+        "secretKey": "2WT1aN7vJse9uykpD6kgZs5zUovYKUxDKDEswPwEa9JnLgrEKseRQpxatFXfDHs9UohZB9A7qGRRZdBGzkWSi8K9"
+      }
+    ]
+  }
+}

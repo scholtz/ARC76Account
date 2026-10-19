@@ -1,3 +1,8 @@
+import json
+from pathlib import Path
+
+import pytest
+
 import base58
 
 from arc76.solana import get_account, get_email_account
@@ -38,3 +43,32 @@ class TestGetEmailAccount:
         assert base58.b58encode(account.secret_key).decode() == (
             "5Vwqas2RYTc5iq4eN4cvx79AfZPY7ygvLt2AtQ5eMdzT9ZgeLDu57m2tpnyw7Z53TtZknyEs1qUMvfwhUkVeDLhC"
         )
+
+
+# Extends the literal tests above with the cross-language vectors in test-vectors/arc76-vectors.json
+# (repo root, shared with dotnet/ and typescript/) - if the languages diverge, cross-language
+# ARC76 compatibility has broken.
+_VECTORS = json.loads(
+    (Path(__file__).resolve().parents[4] / "test-vectors" / "arc76-vectors.json").read_text(
+        encoding="utf-8"
+    )
+)
+
+
+def _ids(cases: list) -> list:
+    return [f"{c['email']}-slot{c['slot']}-{c['password'][:8]}" for c in cases]
+
+
+def _make(c: dict, with_email, without_email):
+    if c["email"] is None:
+        return without_email(c["password"], c["slot"])
+    return with_email(c["email"], c["password"], c["slot"])
+
+_CASES = _VECTORS["accounts"]["solana"]
+
+
+@pytest.mark.parametrize("c", _CASES, ids=_ids(_CASES))
+def test_matches_shared_vector(c: dict) -> None:
+    account = _make(c, get_email_account, get_account)
+    assert base58.b58encode(account.public_key).decode() == c["publicKey"]
+    assert base58.b58encode(account.secret_key).decode() == c["secretKey"]

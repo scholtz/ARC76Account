@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import bs58 from "bs58";
 import { getAccount, getEmailAccount } from "./index";
 
@@ -33,5 +35,31 @@ describe("getEmailAccount", () => {
     expect(bs58.encode(account.secretKey)).toBe(
       "5Vwqas2RYTc5iq4eN4cvx79AfZPY7ygvLt2AtQ5eMdzT9ZgeLDu57m2tpnyw7Z53TtZknyEs1qUMvfwhUkVeDLhC"
     );
+  });
+});
+
+// Extends the literal tests above with the cross-language vectors in test-vectors/arc76-vectors.json
+// (repo root, shared with dotnet/ and python/) - if the languages diverge, cross-language ARC76
+// compatibility has broken.
+interface SharedVector {
+  email: string | null;
+  password: string;
+  slot: number;
+  [field: string]: string | number | null;
+}
+const VECTORS = JSON.parse(
+  readFileSync(join(__dirname, "../../../../test-vectors/arc76-vectors.json"), "utf8")
+) as { seeds: SharedVector[]; accounts: Record<string, SharedVector[]> };
+const label = (v: SharedVector) =>
+  `${v.email ?? "(no email)"} / slot ${v.slot} / ${v.password.slice(0, 8)}`;
+
+describe("shared vectors", () => {
+  it.each(VECTORS.accounts.solana.map((v) => [label(v), v] as const))("%s", async (_l, v) => {
+    const account =
+      v.email === null
+        ? await getAccount(v.password, v.slot)
+        : await getEmailAccount(v.email, v.password, v.slot);
+    expect(bs58.encode(account.publicKey)).toBe(v.publicKey);
+    expect(bs58.encode(account.secretKey)).toBe(v.secretKey);
   });
 });
