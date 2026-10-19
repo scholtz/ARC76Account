@@ -27,7 +27,7 @@ dotnet add package ARC76Account.Solana      # Solana
 automatically by each of the above — install it directly only if you're implementing a new
 chain yourself (see [Adding a new chain](#adding-a-new-chain)).
 
-Installing `ARC76Account.Bitcoin` will not pull in `Algorand4`, `Nethereum.Signer`,
+Installing `ARC76Account.Bitcoin` will not pull in `Algorand5`, `Nethereum.Signer`,
 `NBitcoin.Altcoins`, or `Solnet.Wallet` — each package only depends on what its own chain needs.
 
 Please tell your users to use a password of at least 50 characters long for best safety —

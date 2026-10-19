@@ -17,11 +17,11 @@ chain-specific key.
 The GitHub repo is `scholtz/ARC76Account` (renamed from `scholtz/AlgorandARC76AccountDotNet`;
 `PackageProjectUrl`/`RepositoryUrl` in `Directory.Build.props` point at the new name). As of v3.0, the
 library is split into **one .NET project/NuGet package per chain**, plus a shared `Core`
-package — this is deliberate: installing `ARC76Account.Bitcoin` must not drag in `Algorand4`,
+package — this is deliberate: installing `ARC76Account.Bitcoin` must not drag in `Algorand5`,
 `Nethereum.Signer`, or `NBitcoin.Altcoins`. Don't reintroduce a single merged assembly.
 
 It currently derives accounts for five chains:
-- **Algorand (AVM)** — package `ARC76Account.Algorand`, `ARC76Account.Algorand.ARC76` → `Algorand.Algod.Model.Account` (via the `Algorand4` package). Also ships `ARC76Account.Utils.ARC76Signer`/`IAlgorandSigner` (an ASP.NET Core-friendly transaction signer) and `ARC76Account.Model.Config.ARC76Config` — these are Algorand-specific, so they live here rather than in Core.
+- **Algorand (AVM)** — package `ARC76Account.Algorand`, `ARC76Account.Algorand.ARC76` → `Algorand.Algod.Model.Account` (via the `Algorand5` package). Also ships `ARC76Account.Utils.ARC76Signer`/`IAlgorandSigner` (an ASP.NET Core-friendly transaction signer) and `ARC76Account.Model.Config.ARC76Config` — these are Algorand-specific, so they live here rather than in Core.
 - **Ethereum / EVM** — package `ARC76Account.Ethereum`, `ARC76Account.Ethereum.ARC76` → `Nethereum.Signer.EthECKey`
 - **Bitcoin** — package `ARC76Account.Bitcoin`, `ARC76Account.Bitcoin.ARC76` → `NBitcoin.Key` (native SegWit/bech32 address via `key.PubKey.GetAddress(ScriptPubKeyType.Segwit, network)`, WIF private key via `key.GetWif(network)`)
 - **Bitcoin Cash** — package `ARC76Account.BitcoinCash`, `ARC76Account.BitcoinCash.ARC76` → `NBitcoin.Key` (via the `NBitcoin.Altcoins` package; CashAddr address via `key.PubKey.GetAddress(ScriptPubKeyType.Legacy, NBitcoin.Altcoins.BCash.Instance.Mainnet)` — BCH has no SegWit, so `Legacy` is its only P2PKH type)
@@ -40,7 +40,7 @@ packed).
   - `Arc76Seed.cs` — **public**, namespace `ARC76Account.Core`. Shared PBKDF2 seed derivation.
     Public (not internal) because each chain now lives in its own assembly and calls this from
     outside `ARC76Account.Core`.
-- `ARC76Account.Algorand/` (package `ARC76Account.Algorand`) — depends on `ARC76Account.Core`, `Algorand4`, `Microsoft.Extensions.Options`
+- `ARC76Account.Algorand/` (package `ARC76Account.Algorand`) — depends on `ARC76Account.Core`, `Algorand5`, `Microsoft.Extensions.Options`
   - `ARC76.cs` — `ARC76Account.Algorand.ARC76`
   - `Utils/ARC76Signer.cs`, `Utils/IAlgorandSigner.cs` — namespace `ARC76Account.Utils`
   - `Model/Config/ARC76Config.cs` — namespace `ARC76Account.Model.Config`

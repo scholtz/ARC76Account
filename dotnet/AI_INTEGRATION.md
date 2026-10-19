@@ -36,7 +36,7 @@ install step changed.
 
 **Do not** recommend installing `ARC76Account.Bitcoin` (or any other chain package) when the
 user only asked about a different chain — each package pulls in that chain's SDK
-(`Algorand4`, `Nethereum.Signer`, `NBitcoin`, `NBitcoin.Altcoins`, `Solnet.Wallet`) and nothing
+(`Algorand5`, `Nethereum.Signer`, `NBitcoin`, `NBitcoin.Altcoins`, `Solnet.Wallet`) and nothing
 else; that separation is the reason the packages were split in the first place.
 
 ## What this library does
