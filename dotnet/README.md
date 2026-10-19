@@ -271,7 +271,7 @@ or dependencies. See the `add-chain-support` Claude Code skill in this repo
 `ARC76Account.Algorand` now depends on the `Algorand5` NuGet package instead of `Algorand4`.
 Both ship an assembly named `Algorand.dll` with the same namespaces, so they cannot be
 referenced side by side. If your project still references `Algorand4` directly, switch it to
-`Algorand5` (and drop any `ExcludeAssets="all"` workaround). C# call sites don't change.
+`Algorand5`. If you previously forced `Algorand5` into your output with a direct `Algorand4` reference using `ExcludeAssets="all"`, remove that reference. C# call sites do not change.
 
 ### v2.x → v3.0: one package per chain
 
