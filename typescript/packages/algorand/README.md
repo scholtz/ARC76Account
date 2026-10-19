@@ -26,6 +26,19 @@ const emailAccount = await getEmailAccount(email, password); // slot 0
 
 Both functions return an `algosdk.Account` (`{ addr, sk }`).
 
+### Post-quantum (Falcon-1024) account
+
+```ts
+import { getFalconAccount, getEmailFalconAccount } from "@arc76/algorand";
+
+const falcon = await getFalconAccount(password); // { address, publicKey, privateKey, salt }
+const emailFalcon = await getEmailFalconAccount(email, password, 1);
+```
+
+The same 32-byte ARC76 seed is used as for the Ed25519 account, so leaking the password
+compromises both - use a different `slot` to isolate them. Addresses match the .NET and Python
+packages. Keys work with [`falcon-1024`](https://www.npmjs.com/package/falcon-1024).
+
 Please use a password of at least 50 characters for real accounts — the account's security is
 entirely the password's security.
 

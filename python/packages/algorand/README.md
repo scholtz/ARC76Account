@@ -33,6 +33,23 @@ The Ed25519 keypair itself is expanded via [PyNaCl](https://pypi.org/project/PyN
 (the Python binding for libsodium), the same audited primitive Algorand's own `py-algorand-sdk`
 uses internally.
 
+### Post-quantum (Falcon-1024) account
+
+```
+pip install "arc76-algorand[falcon]"
+```
+
+```python
+from arc76.algorand import get_falcon_account, get_email_falcon_account
+
+falcon = get_falcon_account(password)  # slot 0 - an AlgorandFalconAccount
+falcon = get_email_falcon_account(email, password, slot=1)
+```
+
+Returns `AlgorandFalconAccount(address, public_key, private_key, salt)`. The same 32-byte ARC76
+seed is used as for the Ed25519 account, so leaking the password compromises both - use a
+different `slot` to isolate them. Addresses match the .NET and TypeScript packages.
+
 Please use a password of at least 50 characters for real accounts — the account's security is
 entirely the password's security.
 

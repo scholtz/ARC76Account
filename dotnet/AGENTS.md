@@ -21,7 +21,7 @@ package — this is deliberate: installing `ARC76Account.Bitcoin` must not drag 
 `Nethereum.Signer`, or `NBitcoin.Altcoins`. Don't reintroduce a single merged assembly.
 
 It currently derives accounts for five chains:
-- **Algorand (AVM)** — package `ARC76Account.Algorand`, `ARC76Account.Algorand.ARC76` → `Algorand.Algod.Model.Account` (via the `Algorand5` package). Also ships `ARC76Account.Utils.ARC76Signer`/`IAlgorandSigner` (an ASP.NET Core-friendly transaction signer) and `ARC76Account.Model.Config.ARC76Config` — these are Algorand-specific, so they live here rather than in Core.
+- **Algorand (AVM)** — package `ARC76Account.Algorand`, `ARC76Account.Algorand.ARC76` → `Algorand.Algod.Model.Account` (via the `Algorand5` package) plus `GetFalconAccount`/`GetEmailFalconAccount` → `FalconAccount` (post-quantum; `FromEntropy` of the same 32-byte seed). Also ships `ARC76Account.Utils.ARC76Signer`/`IAlgorandSigner` (an ASP.NET Core-friendly transaction signer) and `ARC76Account.Model.Config.ARC76Config` — these are Algorand-specific, so they live here rather than in Core.
 - **Ethereum / EVM** — package `ARC76Account.Ethereum`, `ARC76Account.Ethereum.ARC76` → `Nethereum.Signer.EthECKey`
 - **Bitcoin** — package `ARC76Account.Bitcoin`, `ARC76Account.Bitcoin.ARC76` → `NBitcoin.Key` (native SegWit/bech32 address via `key.PubKey.GetAddress(ScriptPubKeyType.Segwit, network)`, WIF private key via `key.GetWif(network)`)
 - **Bitcoin Cash** — package `ARC76Account.BitcoinCash`, `ARC76Account.BitcoinCash.ARC76` → `NBitcoin.Key` (via the `NBitcoin.Altcoins` package; CashAddr address via `key.PubKey.GetAddress(ScriptPubKeyType.Legacy, NBitcoin.Altcoins.BCash.Instance.Mainnet)` — BCH has no SegWit, so `Legacy` is its only P2PKH type)

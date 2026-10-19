@@ -35,6 +35,12 @@ importers:
       algosdk:
         specifier: ^3.6.0
         version: 3.6.0
+      falcon-1024:
+        specifier: ^0.2.0
+        version: 0.2.0
+      js-sha512:
+        specifier: ^0.9.0
+        version: 0.9.0
 
   packages/bitcoin:
     dependencies:
@@ -855,6 +861,10 @@ packages:
     resolution: {integrity: sha512-PMARsyh/JtqC20HoGqlFcIlQAyqUtW4PlI1rup1uhYJtKuwAjbvWi3GQMAn+STdHum/dk8xrKfUM1+5SAwpolA==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
 
+  falcon-1024@0.2.0:
+    resolution: {integrity: sha512-zKBiKGbAVmROFJNjy1iZ009V9wclL9lZkRAP7l7cfsHkZg14jyWgJk1XtAnmn2sxaKv2hsRTEVuTot/CSoQnSw==}
+    engines: {node: '>=18'}
+
   fast-json-stable-stringify@2.1.0:
     resolution: {integrity: sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==}
 
@@ -1120,6 +1130,9 @@ packages:
 
   js-sha512@0.8.0:
     resolution: {integrity: sha512-PWsmefG6Jkodqt+ePTvBZCSMFgN7Clckjd0O7su3I0+BW2QWUTJNzjktHsztGLhncP2h8mcF9V9Y2Ha59pAViQ==}
+
+  js-sha512@0.9.0:
+    resolution: {integrity: sha512-mirki9WS/SUahm+1TbAPkqvbCiCfOAAsyXeHxK1UkullnJVVqoJG2pL9ObvT05CN+tM7fxhfYm0NbXn+1hWoZg==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -2461,6 +2474,8 @@ snapshots:
       jest-mock: 30.4.1
       jest-util: 30.4.1
 
+  falcon-1024@0.2.0: {}
+
   fast-json-stable-stringify@2.1.0: {}
 
   fb-watchman@2.0.2:
@@ -2906,6 +2921,8 @@ snapshots:
   js-sha3@0.8.0: {}
 
   js-sha512@0.8.0: {}
+
+  js-sha512@0.9.0: {}
 
   js-tokens@4.0.0: {}
 
