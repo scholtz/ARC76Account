@@ -1,6 +1,5 @@
 import { mnemonicFromSeed, mnemonicToSecretKey, Account, encodeAddress } from "algosdk";
 import { sha512_256 } from "js-sha512";
-import { generateKey } from "falcon-1024";
 import { deriveSeed, deriveSeedWithEmail } from "@arc76/core";
 
 /**
@@ -80,6 +79,9 @@ function isEd25519Point(bytes: Uint8Array): boolean {
 }
 
 function falconFromSeed(seed: Uint8Array): FalconAccount {
+  // Loaded lazily so plain Ed25519 users never load the Falcon WASM module.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { generateKey } = require("falcon-1024") as typeof import("falcon-1024");
   // Same derivation as Algorand's standard Falcon accounts (algosdk-py's to_pq_seed, .NET's
   // FalconAccount.FromEntropy): keygen seed = SHA-512/256("PQK" + scheme + seed).
   const keygenSeed = sha512_256Bytes(ascii("PQK"), FALCON_1024_SCHEME, seed);
