@@ -15,8 +15,16 @@ namespace TestARC76
 
     public static class Vectors
     {
-        private static readonly JsonDocument Doc = JsonDocument.Parse(
-            File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "arc76-vectors.json")));
+        private static readonly Lazy<JsonDocument> LazyDoc = new(() =>
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "arc76-vectors.json");
+            if (!File.Exists(path))
+                throw new FileNotFoundException(
+                    "Shared test vectors not found - TestARC76.csproj should copy test-vectors/arc76-vectors.json next to the test assembly.", path);
+            return JsonDocument.Parse(File.ReadAllText(path));
+        });
+
+        private static JsonDocument Doc => LazyDoc.Value;
 
         private static IEnumerable<Vector> Parse(JsonElement array) =>
             array.EnumerateArray().Select(e => new Vector(

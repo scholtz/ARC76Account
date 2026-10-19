@@ -10,9 +10,14 @@ on:
     paths:
       - "test-vectors/**"
       - ".github/workflows/test-vectors.yml"
+  # PRs also run on any language folder change, so a derivation change that diverges from the
+  # shared vectors is caught before merge (the publish workflows only run after merge).
   pull_request:
     paths:
       - "test-vectors/**"
+      - "dotnet/**"
+      - "typescript/**"
+      - "python/**"
       - ".github/workflows/test-vectors.yml"
   workflow_dispatch: {}
 
