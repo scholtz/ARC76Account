@@ -86,6 +86,20 @@ var savings = ARC76Account.Algorand.ARC76.GetAccount(password, 1);    // slot 1
 var trading = ARC76Account.Algorand.ARC76.GetAccount(password, 2);    // slot 2
 ```
 
+### Algorand post-quantum (Falcon-1024) account
+
+The same 32-byte ARC76 seed can also derive a post-quantum Falcon-1024 account (a different
+account from the Ed25519 one for the same inputs):
+
+```c#
+Algorand.Algod.Model.FalconAccount falcon = ARC76Account.Algorand.ARC76.GetFalconAccount(password);          // slot 0
+var emailFalcon = ARC76Account.Algorand.ARC76.GetEmailFalconAccount("email@example.com", password, slot: 1);
+string address = falcon.Address.EncodeAsString();
+```
+
+> ⚠️ The Falcon account is derived from the *same* password material as the Ed25519 one:
+> leaking the password (or seed) compromises both. Use a different `slot` or password to isolate them.
+
 ### EVM (Ethereum & EVM-compatible chains) account from a password
 
 ```c#

@@ -19,7 +19,8 @@ single merged package.
   `deriveSeedWithEmail`), no chain SDK dependencies. Mirrors
   `dotnet/ARC76Account.Core/Arc76Seed.cs`.
 - **`packages/algorand`** (`@arc76/algorand`) — `getAccount`/`getEmailAccount` →
-  `algosdk.Account`, via `algosdk`.
+  `algosdk.Account`, via `algosdk`. Also `getFalconAccount`/`getEmailFalconAccount` → `FalconAccount`
+  (post-quantum Falcon-1024) via `falcon-1024`; known-answer addresses are shared with `dotnet/` and `python/`.
 - **`packages/ethereum`** (`@arc76/ethereum`) — → `ethers.Wallet` (`ethers` v6).
 - **`packages/bitcoin`** (`@arc76/bitcoin`) — → an `ecpair` keypair, via `bitcoinjs-lib` +
   `ecpair` + `tiny-secp256k1`.

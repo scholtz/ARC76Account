@@ -14,7 +14,14 @@ from algosdk import mnemonic as algosdk_mnemonic
 
 from arc76.core import derive_seed, derive_seed_with_email
 
-__all__ = ["AlgorandAccount", "get_account", "get_email_account"]
+__all__ = [
+    "AlgorandAccount",
+    "AlgorandFalconAccount",
+    "get_account",
+    "get_email_account",
+    "get_falcon_account",
+    "get_email_falcon_account",
+]
 
 
 @dataclass(frozen=True)
@@ -52,3 +59,59 @@ def get_account(password: str, slot: int = 0) -> AlgorandAccount:
 def get_email_account(email: str, password: str, slot: int = 0) -> AlgorandAccount:
     """Derives a deterministic Algorand account from an email and password."""
     return _from_seed(derive_seed_with_email(email, password, slot))
+
+
+@dataclass(frozen=True)
+class AlgorandFalconAccount:
+    """A post-quantum Falcon-1024 Algorand account.
+
+    address: base32 Algorand address (checksummed).
+    public_key: raw 1793-byte Falcon-1024 public key.
+    private_key: raw 2305-byte Falcon-1024 private key, as accepted by
+        ``algorand_falcon.falcon1024.Signer``.
+    salt: the canonical address salt (0-255) - needed together with ``public_key`` to build the
+        post-quantum signature envelope for transactions.
+    """
+
+    address: str
+    public_key: bytes
+    private_key: bytes
+    salt: int
+
+
+def _falcon_from_seed(seed: bytes) -> AlgorandFalconAccount:
+    # Imported lazily: the Falcon dependencies are the optional `arc76-algorand[falcon]` extra.
+    try:
+        from algorand_falcon.falcon1024 import Signer
+    except ImportError as e:  # pragma: no cover - exercised only without the extra installed
+        raise ImportError(
+            "Falcon support requires the optional dependencies: pip install 'arc76-algorand[falcon]'"
+        ) from e
+    from algosdk import constants, encoding
+
+    # Same derivation as Algorand's standard Falcon accounts (algosdk.mnemonic.to_pq_seed, and
+    # .NET's FalconAccount.FromEntropy): keygen seed = SHA-512/256("PQK" + scheme + seed).
+    scheme = constants.falcon_1024_scheme
+    keygen_seed = encoding.checksum(constants.pq_seed_prefix + scheme + seed)
+    signer = Signer.generate(keygen_seed)
+    address, salt = encoding.address_from_pq_key(scheme, signer.public_key)
+    return AlgorandFalconAccount(
+        address=address,
+        public_key=signer.public_key,
+        private_key=signer.private_key,
+        salt=salt,
+    )
+
+
+def get_falcon_account(password: str, slot: int = 0) -> AlgorandFalconAccount:
+    """Derives a deterministic Algorand post-quantum (Falcon-1024) account from a password.
+
+    Uses the same 32-byte ARC76 seed as `get_account`, so it is a different account from the
+    Ed25519 one for the same inputs. Requires the ``falcon`` extra.
+    """
+    return _falcon_from_seed(derive_seed(password, slot))
+
+
+def get_email_falcon_account(email: str, password: str, slot: int = 0) -> AlgorandFalconAccount:
+    """Derives a deterministic Algorand post-quantum (Falcon-1024) account from an email and password."""
+    return _falcon_from_seed(derive_seed_with_email(email, password, slot))

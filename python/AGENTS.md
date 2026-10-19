@@ -28,7 +28,7 @@ alongside it.
   Mirrors `dotnet/ARC76Account.Core/Arc76Seed.cs` and `typescript/packages/core`.
 - **`packages/algorand`** (`arc76-algorand`) — `get_account`/`get_email_account` →
   `AlgorandAccount(address, private_key, mnemonic)`, via `py-algorand-sdk` (address/mnemonic
-  encoding) + `pynacl` (Ed25519 keypair expansion from the raw seed).
+  encoding) + `pynacl` (Ed25519 keypair expansion from the raw seed). Also `get_falcon_account`/`get_email_falcon_account` → `AlgorandFalconAccount` (post-quantum Falcon-1024) behind the optional `falcon` extra (`algorand-falcon`); known-answer addresses are shared with `dotnet/` and `typescript/`.
 - **`packages/ethereum`** (`arc76-ethereum`) — → `eth_account.signers.local.LocalAccount`, via
   `eth-account`.
 - **`packages/bitcoin`** (`arc76-bitcoin`) — → `BitcoinAccount(private_key, public_key)` with

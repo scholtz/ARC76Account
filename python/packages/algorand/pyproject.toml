@@ -24,6 +24,12 @@ dependencies = [
   "pynacl>=1.5.0",
 ]
 
+[project.optional-dependencies]
+falcon = [
+  "py-algorand-sdk>=2.12.0",
+  "algorand-falcon>=0.1.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/scholtz/ARC76Account"
 Repository = "https://github.com/scholtz/ARC76Account"
