@@ -266,6 +266,13 @@ or dependencies. See the `add-chain-support` Claude Code skill in this repo
 
 ## Migration guides
 
+### `ARC76Account.Algorand`: `Algorand4` → `Algorand5` SDK
+
+`ARC76Account.Algorand` now depends on the `Algorand5` NuGet package instead of `Algorand4`.
+Both ship an assembly named `Algorand.dll` with the same namespaces, so they cannot be
+referenced side by side. If your project still references `Algorand4` directly, switch it to
+`Algorand5` (and drop any `ExcludeAssets="all"` workaround). C# call sites don't change.
+
 ### v2.x → v3.0: one package per chain
 
 Version 3.0 splits the single `ARC76Account` package into `ARC76Account.Core` plus one package
