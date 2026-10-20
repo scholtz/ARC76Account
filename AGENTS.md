@@ -69,9 +69,10 @@ No root `.editorconfig`.
 
 ## CI/CD (`.github/workflows/`)
 
-- `publish-nuget.yml` — path-triggered on `dotnet/**` only; diffs each of the six .NET
-  projects' own folder against the previous commit and packs+pushes only the ones that
-  changed, via NuGet Trusted Publishing (OIDC, no stored API key). `--skip-duplicate` is kept
+- `publish-nuget.yml` — path-triggered on `dotnet/**` only; packs+pushes **all six** .NET
+  packages together (Core first, one version) whenever anything shipped in a nupkg changed
+  (tests and AGENTS.md/AI_INTEGRATION.md excluded) — per-project publishing leaves chain
+  packages pinned to an unpublished Core (audit #4) — via NuGet Trusted Publishing (OIDC, no stored API key). `--skip-duplicate` is kept
   as a defensive fallback, not the primary gate.
 - `publish-npm.yml` — path-triggered on `typescript/**` only; diffs each of the six `@arc76/*`
   packages' own folder independently and publishes only the ones that changed, via a classic

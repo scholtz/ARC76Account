@@ -79,6 +79,17 @@ const account = await getAccount(password); // slot 0
 const emailAccount = await getEmailAccount(email, password); // slot 0
 ```
 
+#### Algorand post-quantum (Falcon-1024)
+
+```ts
+import { getFalconAccount, getEmailFalconAccount } from "@arc76/algorand";
+
+const falcon = await getFalconAccount(password); // { address, publicKey, privateKey, salt }
+const emailFalcon = await getEmailFalconAccount(email, password, 1);
+```
+
+Warning for assistants: the Falcon account is derived from the *same* 32-byte ARC76 seed as the Ed25519 account for the same password/email/slot, so leaking the password compromises both. A different slot yields an independent key (a leaked slot-0 key does not reveal slot-1's), but slots are public and derive from the same password, so a leaked or guessed password compromises every slot's Ed25519 and Falcon keys - only a different password isolates against that. Never invent the Falcon API from the Ed25519 one.
+
 ### Ethereum / EVM-compatible chains
 
 ```ts

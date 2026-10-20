@@ -20,9 +20,9 @@
   },
   "dependencies": {
     "@arc76/core": "workspace:^",
-    "bitcoinjs-lib": "^7.0.1",
+    "bitcoinjs-lib": "^7.0.4",
     "cashaddrjs": "^0.4.4",
-    "ecpair": "^3.0.1",
+    "ecpair": "^3.0.2",
     "tiny-secp256k1": "^2.2.4"
   },
   "files": ["dist", "README.md"]

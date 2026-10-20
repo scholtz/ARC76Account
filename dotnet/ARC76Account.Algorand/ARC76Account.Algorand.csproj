@@ -8,8 +8,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Algorand5" Version="5.0.2.2026101113" />
-		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.10" />
+		<PackageReference Include="Algorand5" Version="5.0.3.2026101923" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.13" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -98,7 +98,8 @@ string address = falcon.Address.EncodeAsString();
 ```
 
 > ⚠️ The Falcon account is derived from the *same* password material as the Ed25519 one:
-> leaking the password (or seed) compromises both. Use a different `slot` or password to isolate them.
+> leaking the password (or seed) compromises both. A different `slot` gives an independent key, but slots are public and derive from the same
+> password, so only a different password isolates against password compromise.
 
 ### EVM (Ethereum & EVM-compatible chains) account from a password
 
