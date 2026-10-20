@@ -76,24 +76,24 @@ whatever's merely committed to `master`.
 
 | Package                    | Registry | Latest deployed    | Last checked |
 |-----------------------------|----------|---------------------|--------------|
-| `ARC76Account.Core`         | NuGet    | `1.0.2.2026080318`  | 2026-08-04 (audit #3) |
-| `ARC76Account.Algorand`     | NuGet    | `1.0.2.2026080318`  | 2026-08-04 (audit #3) |
-| `ARC76Account.Ethereum`     | NuGet    | `1.0.2.2026080318`  | 2026-08-04 (audit #3) |
-| `ARC76Account.Bitcoin`      | NuGet    | `1.0.1.2026080317`  | 2026-08-04 (audit #3) |
-| `ARC76Account.BitcoinCash`  | NuGet    | `1.0.1.2026080317`  | 2026-08-04 (audit #3) |
-| `ARC76Account.Solana`       | NuGet    | `1.0.1.2026080317`  | 2026-08-04 (audit #3) |
-| `@arc76/core`                | npm      | `1.5.2026080320`    | 2026-08-04 (audit #3) |
-| `@arc76/algorand`            | npm      | `1.5.2026080320`    | 2026-08-04 (audit #3) |
-| `@arc76/ethereum`            | npm      | `1.5.2026080320`    | 2026-08-04 (audit #3) |
-| `@arc76/bitcoin`             | npm      | `1.5.2026080320`    | 2026-08-04 (audit #3) |
-| `@arc76/bitcoincash`         | npm      | `1.5.2026080320`    | 2026-08-04 (audit #3) |
-| `@arc76/solana`              | npm      | `1.5.2026080320`    | 2026-08-04 (audit #3) |
-| `arc76-core`                 | PyPI     | `1.1.2026080321`    | 2026-08-04 (audit #3) |
-| `arc76-algorand`             | PyPI     | `1.1.2026080321`    | 2026-08-04 (audit #3) |
-| `arc76-ethereum`             | PyPI     | `1.1.2026080321`    | 2026-08-04 (audit #3) |
-| `arc76-bitcoin`              | PyPI     | `1.1.2026080321`    | 2026-08-04 (audit #3) |
-| `arc76-bitcoincash`          | PyPI     | `1.1.2026080321`    | 2026-08-04 (audit #3) |
-| `arc76-solana`               | PyPI     | `1.1.2026080321`    | 2026-08-04 (audit #3) |
+| `ARC76Account.Core`         | NuGet    | `1.0.4.2026080407` | 2026-10-19 (audit #4) |
+| `ARC76Account.Algorand`     | NuGet    | `1.0.6.2026101918` (**uninstallable** - see audit #4) | 2026-10-19 (audit #4) |
+| `ARC76Account.Ethereum`     | NuGet    | `1.0.4.2026080407` | 2026-10-19 (audit #4) |
+| `ARC76Account.Bitcoin`      | NuGet    | `1.0.4.2026080407` | 2026-10-19 (audit #4) |
+| `ARC76Account.BitcoinCash`  | NuGet    | `1.0.4.2026080407` | 2026-10-19 (audit #4) |
+| `ARC76Account.Solana`       | NuGet    | `1.0.4.2026080407` | 2026-10-19 (audit #4) |
+| `@arc76/core`               | npm      | `1.8.2026101919` | 2026-10-19 (audit #4) |
+| `@arc76/algorand`           | npm      | `1.8.2026101919` | 2026-10-19 (audit #4) |
+| `@arc76/ethereum`           | npm      | `1.8.2026101919` | 2026-10-19 (audit #4) |
+| `@arc76/bitcoin`            | npm      | `1.8.2026101919` | 2026-10-19 (audit #4) |
+| `@arc76/bitcoincash`        | npm      | `1.8.2026101919` | 2026-10-19 (audit #4) |
+| `@arc76/solana`             | npm      | `1.8.2026101919` | 2026-10-19 (audit #4) |
+| `arc76-core`                | PyPI     | `1.4.2026101919` | 2026-10-19 (audit #4) |
+| `arc76-algorand`            | PyPI     | `1.4.2026101919` | 2026-10-19 (audit #4) |
+| `arc76-ethereum`            | PyPI     | `1.4.2026101919` | 2026-10-19 (audit #4) |
+| `arc76-bitcoin`             | PyPI     | `1.4.2026101919` | 2026-10-19 (audit #4) |
+| `arc76-bitcoincash`         | PyPI     | `1.4.2026101919` | 2026-10-19 (audit #4) |
+| `arc76-solana`              | PyPI     | `1.4.2026101919` | 2026-10-19 (audit #4) |
 
 Lookup commands (also in Phase 2 below):
 ```bash
@@ -107,17 +107,15 @@ npm view @arc76/<name> version
 curl -s "https://pypi.org/pypi/arc76-<name>/json"   # .info.version
 ```
 
-Notes as of 2026-08-04 audit #3 (`audits/2026-08-04-audit-report.md`):
-- npm is fully repaired: all six `@arc76/*` published at `1.5.2026080320`, fresh installs
-  verified working, shipped code verified against known answers (audit #2's High #1 resolved).
-- NuGet `Bitcoin`/`BitcoinCash`/`Solana` are **still** `1.0.1` with a Core floor of
-  `1.0.1.2026080317` — NuGet's lowest-wins resolution means a fresh install of those three
-  still pulls the **pre-fix, vulnerable Core** (re-proven live in audit #3). A
-  `workflow_dispatch` run of `publish-nuget.yml` is still needed; it will also ship audit
-  #3's culture-invariant negative-slot fix to `Arc76Seed.cs` (every Core published so far,
-  1.0.2 included, carries that bug).
-- PyPI entered scope in audit #3: all six `arc76-*` published at `1.1.2026080321`, wheels
-  byte-identical to source, shipped code verified against known answers.
+Notes as of 2026-10-19 audit #4 (`audits/2026-10-19-audit-report.md`):
+- NuGet was republished at `1.0.4.2026080407` (Core + Ethereum/Bitcoin/BitcoinCash/Solana):
+  audit #3's two Highs are resolved and verified live.
+- `ARC76Account.Algorand` `1.0.5`/`1.0.6` pin an exact `ARC76Account.Core` of their own version
+  that was never published (the pipeline packs only changed projects) - a fresh restore fails
+  with NU1102. A `workflow_dispatch` of `publish-nuget.yml` (publishes all six) is needed.
+- Falcon-1024 (Algorand post-quantum) accounts are now in scope in all three languages
+  (shared vectors `accounts.falcon`); the .NET packages are `net10.0`-only.
+- npm `1.8.2026101919` and PyPI `1.4.2026101919` verified clean.
 
 **Documentation**, insofar as it makes security- or entropy-relevant claims a user might rely
 on: root `README.md`, `dotnet/README.md`, `typescript/README.md`, every package README, both
@@ -226,6 +224,12 @@ this repository, without changing a single line here.
   vulnerable Core even after a fixed Core is published. Verify by performing a real, fresh
   `dotnet add package` / `npm install` of each chain package and listing the transitively
   resolved core version — not by reading ranges alone.
+- **Check every dependent's *latest* version, not just that some version installs** (added in
+  audit #4): NuGet chain packages pin `ARC76Account.Core` to their own exact version, and the
+  pipeline publishes only changed projects, so a single-chain commit can ship a chain package
+  whose Core pin was never published. For each package do a fresh `dotnet add package` against
+  the *latest* version (use a `net10.0` project - the packages target only net10.0) and confirm
+  it restores; also confirm each dependency version in the nuspec exists on the registry.
 - Check npmjs.com/nuget.org for any **other**, similarly-named package that could plausibly be
   typosquatted against this project (e.g. `arc-76`, `arc76js`, `ARC76Account.Core` vs a
   lookalike) and note it as an informational finding if found, since users could be tricked
