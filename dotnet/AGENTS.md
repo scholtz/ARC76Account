@@ -176,7 +176,7 @@ pushed: if anything that ships in a nupkg changed (any file under `dotnet/` exce
 version, Core first (see "Determine changed packages"). This is deliberate — each chain package
 pins `ARC76Account.Core` to its own exact version, so publishing a single project makes it depend
 on a Core version that was never published (audit #4: `ARC76Account.Algorand` 1.0.5/1.0.6 were
-uninstallable). Don't "optimise" this back to per-project publishing. A pre-push step restores
+uninstallable). Don't "optimise" this back to per-project publishing. Change detection only looks at the pushed range, so if a publish run fails, trigger `workflow_dispatch` to republish (a later docs-only push will not). A pre-push step restores
 every packed chain package from the fresh artifacts as a smoke test. Update `README.md`
 (and add a migration guide entry, if the change is breaking) before merging, since publishing
 itself happens automatically on merge to `master`.

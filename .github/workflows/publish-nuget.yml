@@ -131,7 +131,8 @@ jobs:
             cd smoke
             dotnet add package "$id" --version "$VER" \
               --source "$ART" --source https://api.nuget.org/v3/index.json
-            echo "OK: $id $VER restores"
+            dotnet list package --include-transitive | grep -q "ARC76Account.Core .*$VER"               || { echo "$id did not resolve ARC76Account.Core $VER" >&2; exit 1; }
+            echo "OK: $id $VER restores with Core $VER"
             cd "$GITHUB_WORKSPACE"
           done
 
