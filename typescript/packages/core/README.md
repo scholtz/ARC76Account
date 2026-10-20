@@ -32,4 +32,4 @@ much longer (≥ 50 characters recommended).
 > password/email/slot, `@arc76/bitcoin`/`@arc76/bitcoincash`/`@arc76/ethereum` derive the
 > identical secp256k1 private key, and `@arc76/algorand`/`@arc76/solana` derive the identical
 > Ed25519 keypair — leaking one chain's key leaks every other chain sharing its curve. Use a
-> different password (a different `slot` does NOT isolate: slots are public) per chain if you need isolation.
+> different password (or `slot`) per chain if you need isolation.

@@ -87,7 +87,7 @@ least 50 characters — the account's security is entirely the password's securi
 > accounts derived from the same password/email/slot are likewise the **identical Ed25519
 > keypair**. Practically: leaking your Ethereum private key **is** leaking your Bitcoin and
 > Bitcoin Cash private key for that password — no additional attacker effort required. If you
-> need isolation between chains, use a different password (a different `slot` does NOT isolate: slots are public) per chain rather than
+> need isolation between chains, use a different password (or `slot`) per chain rather than
 > assuming this library gives you that isolation by default.
 
 ## Repo layout

@@ -269,7 +269,7 @@ All nine phases of `AUDITS-INSTRUCTIONS.md` were performed:
 | Low - stale deps | NBitcoin 10.0.17, NBitcoin.Altcoins 6.0.11, Microsoft.Extensions.Options 10.0.13, algosdk ^3.9.0, bitcoinjs-lib ^7.0.4, ecpair ^3.0.2 (62/62 .NET and 60/60 TypeScript tests pass). Chaos.NaCl / tweetnacl / cashaddrjs / buffer / PyPI base58+bech32 have no maintained drop-in replacement and remain monitored. |
 | Info - AI guides lack Falcon | Falcon sections (with the shared-secret warning) added to all three `AI_INTEGRATION.md`. |
 | Info - dev-only pnpm advisories | jest/ts-jest/prettier/@types/node refreshed; 5 dev-only advisories remain (js-yaml, brace-expansion, sprintf-js via jest coverage tooling; `pnpm audit --prod` is clean; pnpm overrides did not take effect and `sprintf-js` has no patched release yet). |
-| Info - docs said a different `slot` isolates keys | Wrong (slots are public and derive from the same password): corrected in ~20 README/AI-guide places to say only a different password isolates. |
+| Info - Falcon docs said a different `slot` isolates the Falcon and Ed25519 accounts | Misleading against password compromise (slots derive from the same password); Falcon notes now state the nuance. General multi-chain `slot` advice left as-is: a different slot does give an independent key against a single-key leak. |
 | Low - npm token, example password; Info - legacy deprecation, PyPI `arc76` name | Not code changes: maintainer registry/account actions or intentionally retained. |
 
 ## Items explicitly out of scope or unable to verify

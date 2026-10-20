@@ -47,13 +47,14 @@ falcon = get_email_falcon_account(email, password, slot=1)
 ```
 
 Returns `AlgorandFalconAccount(address, public_key, private_key, salt)`. The same 32-byte ARC76
-seed is used as for the Ed25519 account, so leaking the password compromises both. Slots are
-public and do not isolate them - only a different password does. Addresses match the .NET and TypeScript packages.
+seed is used as for the Ed25519 account, so leaking the password compromises both. A different
+`slot` gives an independent key, but slots are public and derive from the same password,
+so only a different password isolates against password compromise. Addresses match the .NET and TypeScript packages.
 
 Please use a password of at least 50 characters for real accounts — the account's security is
 entirely the password's security.
 
 > ⚠️ **Same-curve chains share the literal same keypair.** `arc76-algorand` and `arc76-solana`
 > derive the **identical Ed25519 keypair** from the same password/email/slot — leaking the key
-> on one of those chains leaks it on the other. Use a different password (a different `slot` does NOT isolate: slots are public) per chain
+> on one of those chains leaks it on the other. Use a different password (or `slot`) per chain
 > if you need isolation.

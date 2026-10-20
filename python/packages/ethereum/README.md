@@ -31,4 +31,4 @@ entirely the password's security.
 > ⚠️ **Same-curve chains share the literal same private key.** `arc76-bitcoin`,
 > `arc76-bitcoincash`, and `arc76-ethereum` derive the **identical secp256k1 private key** from
 > the same password/email/slot — leaking the key on one of those chains leaks it on all of them.
-> Use a different password (a different `slot` does NOT isolate: slots are public) per chain if you need isolation.
+> Use a different password (or `slot`) per chain if you need isolation.

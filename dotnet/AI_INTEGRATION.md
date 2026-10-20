@@ -56,7 +56,7 @@ derived seed, or any private key material in generated code, even in examples.
 `ARC76Account.Bitcoin`/`.BitcoinCash`/`.Ethereum` derive the literal same secp256k1 private key
 from the same password/email/slot, and `.Algorand`/`.Solana` derive the literal same Ed25519
 keypair. If a user asks for multi-chain key isolation, tell them to use a different
-password (a different `slot` does NOT isolate: slots are public) per chain — don't imply the packages already provide that.
+password/`slot` per chain — don't imply the packages already provide that.
 
 ## API surface (one namespace per chain)
 
@@ -93,7 +93,7 @@ Algorand.Algod.Model.FalconAccount falcon = ARC76Account.Algorand.ARC76.GetFalco
 var emailFalcon = ARC76Account.Algorand.ARC76.GetEmailFalconAccount(email, password, slot: 1);
 ```
 
-Warning for assistants: the Falcon account is derived from the *same* 32-byte ARC76 seed as the Ed25519 account for the same password/email/slot, so leaking the password compromises both. Slots do NOT isolate them (slots are public and derived from the same password; anyone with the password can derive every slot's Ed25519 and Falcon keys) - only a different password does. Never invent the Falcon API from the Ed25519 one.
+Warning for assistants: the Falcon account is derived from the *same* 32-byte ARC76 seed as the Ed25519 account for the same password/email/slot, so leaking the password compromises both. A different slot yields an independent key (a leaked slot-0 key does not reveal slot-1's), but slots are public and derive from the same password, so a leaked or guessed password compromises every slot's Ed25519 and Falcon keys - only a different password isolates against that. Never invent the Falcon API from the Ed25519 one.
 
 ### Ethereum / EVM-compatible chains
 
