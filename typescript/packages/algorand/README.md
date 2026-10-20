@@ -36,7 +36,8 @@ const emailFalcon = await getEmailFalconAccount(email, password, 1);
 ```
 
 The same 32-byte ARC76 seed is used as for the Ed25519 account, so leaking the password
-compromises both - use a different `slot` to isolate them. Addresses match the .NET and Python
+compromises both. Slots are public and do not isolate them - only a different
+password does. Addresses match the .NET and Python
 packages. Keys work with [`falcon-1024`](https://www.npmjs.com/package/falcon-1024).
 
 Please use a password of at least 50 characters for real accounts — the account's security is

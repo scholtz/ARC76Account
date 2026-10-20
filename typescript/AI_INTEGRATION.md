@@ -88,7 +88,7 @@ const falcon = await getFalconAccount(password); // { address, publicKey, privat
 const emailFalcon = await getEmailFalconAccount(email, password, 1);
 ```
 
-Warning for assistants: the Falcon account is derived from the *same* 32-byte ARC76 seed as the Ed25519 account for the same password/email/slot, so leaking the password compromises both. Use a different slot or password to isolate them, and never invent the Falcon API from the Ed25519 one.
+Warning for assistants: the Falcon account is derived from the *same* 32-byte ARC76 seed as the Ed25519 account for the same password/email/slot, so leaking the password compromises both. Slots do NOT isolate them (slots are public and derived from the same password; anyone with the password can derive every slot's Ed25519 and Falcon keys) - only a different password does. Never invent the Falcon API from the Ed25519 one.
 
 ### Ethereum / EVM-compatible chains
 

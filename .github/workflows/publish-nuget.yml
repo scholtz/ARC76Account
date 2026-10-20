@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   publish:
-    name: Build, test, pack, and publish changed packages
+    name: Build, test, pack, and publish packages
     runs-on: ubuntu-latest
     # Optional: lets you require manual approval / scope secrets to this environment in repo
     # settings. If you don't want that, delete this line - and if your nuget.org Trusted
@@ -98,7 +98,7 @@ jobs:
           echo "Projects to publish:"
           cat /tmp/changed-projects.txt
 
-      - name: Pack changed packages
+      - name: Pack packages
         working-directory: dotnet
         run: |
           mkdir -p ../artifacts
@@ -158,9 +158,12 @@ jobs:
               --source https://api.nuget.org/v3/index.json \
               --skip-duplicate
           }
-          for f in artifacts/ARC76Account.Core.*.nupkg; do
-            [ -f "$f" ] && push "$f"
-          done
+          core=$(ls artifacts/ARC76Account.Core.*.nupkg 2>/dev/null | head -n1 || true)
+          if [ -z "$core" ]; then
+            echo "ARC76Account.Core was not packed - refusing to push chain packages that pin it" >&2
+            exit 1
+          fi
+          push "$core"
           for f in artifacts/*.nupkg; do
             case "$f" in artifacts/ARC76Account.Core.*) continue ;; esac
             push "$f"
