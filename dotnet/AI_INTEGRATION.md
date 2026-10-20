@@ -86,6 +86,15 @@ Algorand.Algod.Model.Account account2 = ARC76Account.Algorand.ARC76.GetEmailAcco
 string address = account.Address.EncodeAsString();
 ```
 
+#### Algorand post-quantum (Falcon-1024)
+
+```c#
+Algorand.Algod.Model.FalconAccount falcon = ARC76Account.Algorand.ARC76.GetFalconAccount(password);
+var emailFalcon = ARC76Account.Algorand.ARC76.GetEmailFalconAccount(email, password, slot: 1);
+```
+
+Warning for assistants: the Falcon account is derived from the *same* 32-byte ARC76 seed as the Ed25519 account for the same password/email/slot, so leaking the password compromises both. Use a different slot or password to isolate them, and never invent the Falcon API from the Ed25519 one.
+
 ### Ethereum / EVM-compatible chains
 
 ```c#

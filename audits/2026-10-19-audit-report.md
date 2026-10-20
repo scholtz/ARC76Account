@@ -260,6 +260,17 @@ All nine phases of `AUDITS-INSTRUCTIONS.md` were performed:
 | **Info** — GitHub secrets unverifiable | Unchanged. |
 | **Info** — `>=1.0.0` core floors on npm/PyPI | Re-verified: fresh npm install resolves core `1.8.2026101919`; no action. |
 
+## Remediation (same-day follow-up, branch `audit-4-fixes`)
+
+| Finding | Resolution in source |
+|---|---|
+| High - Algorand uninstallable | `publish-nuget.yml` now always packs Core whenever any chain project is packed, and a new pre-push step restores every packed chain package from the fresh artifacts. **Still needs a `workflow_dispatch`/merge-triggered publish to repair the registry**; re-verify with a fresh restore afterwards. |
+| Low - MessagePack advisory | `Algorand5` bumped to `5.0.3.2026101923`; `dotnet list package --vulnerable --include-transitive` is clean for all projects. |
+| Low - stale deps | NBitcoin 10.0.17, NBitcoin.Altcoins 6.0.11, Nethereum.Signer 7.0.0, Microsoft.Extensions.Options 10.0.13, algosdk ^3.9.0, bitcoinjs-lib ^7.0.4, ecpair ^3.0.2 (62/62 .NET and 60/60 TypeScript tests pass). Chaos.NaCl / tweetnacl / cashaddrjs / buffer / PyPI base58+bech32 have no maintained drop-in replacement and remain monitored. |
+| Info - AI guides lack Falcon | Falcon sections (with the shared-secret warning) added to all three `AI_INTEGRATION.md`. |
+| Info - dev-only pnpm advisories | jest/ts-jest/prettier/@types/node refreshed; 5 dev-only advisories remain (js-yaml, brace-expansion, sprintf-js via jest coverage tooling; `pnpm audit --prod` is clean; pnpm overrides did not take effect and `sprintf-js` has no patched release yet). |
+| Low - npm token, example password; Info - legacy deprecation, PyPI `arc76` name | Not code changes: maintainer registry/account actions or intentionally retained. |
+
 ## Items explicitly out of scope or unable to verify
 
 - Triggering the `workflow_dispatch` NuGet republish finding 1 needs — an outward-facing publish

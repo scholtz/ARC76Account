@@ -98,6 +98,13 @@ jobs:
               echo "$proj" >> /tmp/changed-projects.txt
             fi
           done
+          # Every chain nupkg pins ARC76Account.Core to its OWN exact version, so if any chain
+          # project is packed, Core must be packed at the same version - otherwise the chain
+          # package depends on a Core version that was never published and is uninstallable
+          # (audit #4, 2026-10-19: ARC76Account.Algorand 1.0.5/1.0.6 -> NU1102). Do not remove.
+          if [ -s /tmp/changed-projects.txt ] && ! grep -qx "ARC76Account.Core" /tmp/changed-projects.txt; then
+            echo "ARC76Account.Core" >> /tmp/changed-projects.txt
+          fi
           echo "Changed projects:"
           cat /tmp/changed-projects.txt
 
@@ -114,6 +121,23 @@ jobs:
               --output ../artifacts
           done < /tmp/changed-projects.txt
           ls -la ../artifacts || true
+
+      # Pre-publish smoke test: every packed chain package must restore from the freshly packed
+      # artifacts (plus nuget.org for third-party deps) - catches an unresolvable ARC76Account.Core
+      # pin BEFORE anything is pushed. The packages target net10.0 only.
+      - name: Verify packed packages restore
+        if: hashFiles('artifacts/*.nupkg') != ''
+        run: |
+          set -e
+          ART="$(pwd)/artifacts"
+          for f in "$ART"/ARC76Account.*.nupkg; do
+            id=$(basename "$f" | sed -E 's/\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.nupkg$//')
+            [ "$id" = "ARC76Account.Core" ] && continue
+            ver=$(basename "$f" .nupkg | sed "s/^$id\.//")
+            dir=$(mktemp -d)
+            (cd "$dir" && dotnet new classlib -n smoke -f net10.0 >/dev/null && cd smoke               && dotnet add package "$id" --version "$ver" --source "$ART" --source https://api.nuget.org/v3/index.json >/dev/null)
+            echo "OK: $id $ver restores"
+          done
 
       # See https://learn.microsoft.com/nuget/nuget-org/trusted-publishing
       # Configure a Trusted Publishing policy on nuget.org (per package, or account-wide) with:

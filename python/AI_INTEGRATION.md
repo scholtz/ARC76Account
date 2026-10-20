@@ -83,6 +83,19 @@ email_account = get_email_account(email, password)  # slot 0
 print(account.address, account.mnemonic)
 ```
 
+#### Algorand post-quantum (Falcon-1024)
+
+Requires the optional extra: `pip install "arc76-algorand[falcon]"`.
+
+```python
+from arc76.algorand import get_falcon_account, get_email_falcon_account
+
+falcon = get_falcon_account(password)  # AlgorandFalconAccount(address, public_key, private_key, salt)
+email_falcon = get_email_falcon_account(email, password, slot=1)
+```
+
+Warning for assistants: the Falcon account is derived from the *same* 32-byte ARC76 seed as the Ed25519 account for the same password/email/slot, so leaking the password compromises both. Use a different slot or password to isolate them, and never invent the Falcon API from the Ed25519 one.
+
 ### Ethereum / EVM-compatible chains
 
 ```python
