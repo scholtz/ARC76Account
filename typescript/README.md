@@ -58,7 +58,7 @@ that as a hard floor, not a recommendation.)
 > exact same 32 bytes). `@arc76/algorand` and `@arc76/solana` likewise derive the literal same
 > Ed25519 keypair. Leaking one chain's key leaks every other chain sharing its curve, with zero
 > extra attacker effort. See the [monorepo README](../README.md#shared-arc76-semantics) for the
-> full explanation. Use a different password/`slot` per chain if you need isolation.
+> full explanation. Use a different password (a different `slot` does NOT isolate: slots are public) per chain if you need isolation.
 
 ## Cross-language compatibility
 

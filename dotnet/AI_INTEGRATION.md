@@ -56,7 +56,7 @@ derived seed, or any private key material in generated code, even in examples.
 `ARC76Account.Bitcoin`/`.BitcoinCash`/`.Ethereum` derive the literal same secp256k1 private key
 from the same password/email/slot, and `.Algorand`/`.Solana` derive the literal same Ed25519
 keypair. If a user asks for multi-chain key isolation, tell them to use a different
-password/`slot` per chain — don't imply the packages already provide that.
+password (a different `slot` does NOT isolate: slots are public) per chain — don't imply the packages already provide that.
 
 ## API surface (one namespace per chain)
 

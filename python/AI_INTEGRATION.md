@@ -49,7 +49,7 @@ private key/mnemonic in generated code, even in examples.
 `arc76-bitcoin`/`bitcoincash`/`ethereum` derive the literal same secp256k1 private key from the
 same password/email/slot, and `arc76-algorand`/`arc76-solana` derive the literal same Ed25519
 keypair. If a user asks for multi-chain key isolation, tell them to use a different
-password/`slot` per chain — don't imply the packages already provide that.
+password (a different `slot` does NOT isolate: slots are public) per chain — don't imply the packages already provide that.
 
 ## API surface (one package per chain)
 

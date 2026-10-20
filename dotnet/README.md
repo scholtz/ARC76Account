@@ -39,7 +39,7 @@ its strength *is* the account's security.
 > exact same 32 bytes). `.Algorand` and `.Solana` likewise derive the literal same Ed25519
 > keypair. Leaking one chain's key leaks every other chain sharing its curve, with zero extra
 > attacker effort. See the [monorepo README](../README.md#shared-arc76-semantics) for the full
-> explanation. Use a different password/`slot` per chain if you need isolation.
+> explanation. Use a different password (a different `slot` does NOT isolate: slots are public) per chain if you need isolation.
 
 ## Supported chains
 

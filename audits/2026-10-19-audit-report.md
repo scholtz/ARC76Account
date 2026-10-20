@@ -139,7 +139,7 @@ All nine phases of `AUDITS-INSTRUCTIONS.md` were performed:
   exists), or stop pinning Core to the chain package's own version (e.g. a fixed
   `[1.0.4,)` floor via `PackageReference` with `PrivateAssets`/explicit version). Then add a
   post-publish smoke step doing a fresh `dotnet add package` of each pushed chain package.
-  Consider unlisting `1.0.5` / `1.0.6` once a good version is out.
+  Consider unlisting `1.0.5` / `1.0.6` once a good version is out. (Implemented in the follow-up as: publish all six together, Core first - see Remediation.)
 - **Status**: **Fixed in source (branch `audit-4-fixes`); registry still broken until the next NuGet publish runs** — re-verify with a fresh restore afterwards.
 
 ### [LOW] Transitive `MessagePack 3.1.8` (via `Algorand5`) has a known moderate advisory
@@ -264,11 +264,12 @@ All nine phases of `AUDITS-INSTRUCTIONS.md` were performed:
 
 | Finding | Resolution in source |
 |---|---|
-| High - Algorand uninstallable | `publish-nuget.yml` now always packs Core whenever any chain project is packed, and a new pre-push step restores every packed chain package from the fresh artifacts. **Still needs a `workflow_dispatch`/merge-triggered publish to repair the registry**; re-verify with a fresh restore afterwards. |
+| High - Algorand uninstallable | `publish-nuget.yml` now packs and pushes all six packages together at one version (Core pushed first) whenever any shipped file under `dotnet/` changed, and a new pre-push step restores every packed chain package from the fresh artifacts. **Still needs a `workflow_dispatch`/merge-triggered publish to repair the registry**; re-verify with a fresh restore afterwards. |
 | Low - MessagePack advisory | `Algorand5` bumped to `5.0.3.2026101923`; `dotnet list package --vulnerable --include-transitive` is clean for all projects. |
 | Low - stale deps | NBitcoin 10.0.17, NBitcoin.Altcoins 6.0.11, Microsoft.Extensions.Options 10.0.13, algosdk ^3.9.0, bitcoinjs-lib ^7.0.4, ecpair ^3.0.2 (62/62 .NET and 60/60 TypeScript tests pass). Chaos.NaCl / tweetnacl / cashaddrjs / buffer / PyPI base58+bech32 have no maintained drop-in replacement and remain monitored. |
 | Info - AI guides lack Falcon | Falcon sections (with the shared-secret warning) added to all three `AI_INTEGRATION.md`. |
 | Info - dev-only pnpm advisories | jest/ts-jest/prettier/@types/node refreshed; 5 dev-only advisories remain (js-yaml, brace-expansion, sprintf-js via jest coverage tooling; `pnpm audit --prod` is clean; pnpm overrides did not take effect and `sprintf-js` has no patched release yet). |
+| Info - docs said a different `slot` isolates keys | Wrong (slots are public and derive from the same password): corrected in ~20 README/AI-guide places to say only a different password isolates. |
 | Low - npm token, example password; Info - legacy deprecation, PyPI `arc76` name | Not code changes: maintainer registry/account actions or intentionally retained. |
 
 ## Items explicitly out of scope or unable to verify
