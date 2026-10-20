@@ -69,14 +69,14 @@ jobs:
         working-directory: dotnet
         run: dotnet test --configuration Release --no-build
 
-      # Every chain project also gets packed+pushed whenever ARC76Account.Core changed - not
-      # just when its own folder changed. This is deliberate: each chain nupkg's dependency on
-      # Core is pinned to an exact version (see the nuspec), and NuGet resolves the *lowest*
-      # version satisfying a range - so if Core ships a fix but a chain package isn't
-      # republished against it, a fresh `dotnet add package` for that chain still resolves the
-      # old, unfixed Core (this is exactly what audit #2, 2026-08-03, found live in
-      # ARC76Account.Bitcoin/.BitcoinCash/.Solana). Do not revert to "only own folder changed"
-      # without re-reading that report's High findings.
+      # All six packages are packed+pushed together, at one version, whenever anything that ships
+      # in a nupkg changed (any file under dotnet/ except tests and agent/AI docs). Deliberate:
+      # each chain nupkg pins ARC76Account.Core to an EXACT version equal to its own, and NuGet
+      # resolves the *lowest* matching version. Publishing only the changed project therefore
+      # either leaves a chain package on an old, unfixed Core (audit #2, 2026-08-03) or makes it
+      # depend on a Core version that was never published and is uninstallable (audit #4,
+      # 2026-10-19: ARC76Account.Algorand 1.0.5/1.0.6 -> NU1102). Do not revert to per-project
+      # change detection. Test-only / AGENTS.md / AI_INTEGRATION.md changes publish nothing.
       - name: Determine changed packages
         id: changed
         working-directory: dotnet
@@ -87,26 +87,15 @@ jobs:
           FORCE_ALL=false
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
             FORCE_ALL=true
-          elif ! git diff --quiet "$BEFORE" "${{ github.sha }}" -- "ARC76Account.Core/" Directory.Build.props Directory.Build.targets Directory.Packages.props; then
-            # Core changed, or a shared build/metadata file affecting every project changed.
+          elif ! git diff --quiet "$BEFORE" "${{ github.sha }}" -- . ':(exclude)TestARC76' ':(exclude)AGENTS.md' ':(exclude)AI_INTEGRATION.md'; then
             FORCE_ALL=true
           fi
-          for name in "${PROJECTS[@]}"; do
-            proj="ARC76Account.$name"
-            if [ "$FORCE_ALL" = "true" ]; then
-              echo "$proj" >> /tmp/changed-projects.txt
-            elif ! git diff --quiet "$BEFORE" "${{ github.sha }}" -- "$proj/"; then
-              echo "$proj" >> /tmp/changed-projects.txt
-            fi
-          done
-          # Every chain nupkg pins ARC76Account.Core to its OWN exact version, so if any chain
-          # project is packed, Core must be packed at the same version - otherwise the chain
-          # package depends on a Core version that was never published and is uninstallable
-          # (audit #4, 2026-10-19: ARC76Account.Algorand 1.0.5/1.0.6 -> NU1102). Do not remove.
-          if [ -s /tmp/changed-projects.txt ] && ! grep -qx "ARC76Account.Core" /tmp/changed-projects.txt; then
-            echo "ARC76Account.Core" >> /tmp/changed-projects.txt
+          if [ "$FORCE_ALL" = "true" ]; then
+            for name in "${PROJECTS[@]}"; do
+              echo "ARC76Account.$name" >> /tmp/changed-projects.txt
+            done
           fi
-          echo "Changed projects:"
+          echo "Projects to publish:"
           cat /tmp/changed-projects.txt
 
       - name: Pack changed packages
@@ -124,20 +113,26 @@ jobs:
           ls -la ../artifacts || true
 
       # Pre-publish smoke test: every packed chain package must restore from the freshly packed
-      # artifacts (plus nuget.org for third-party deps) - catches an unresolvable ARC76Account.Core
-      # pin BEFORE anything is pushed. The packages target net10.0 only.
+      # artifacts (plus nuget.org for third-party deps), proving its exact ARC76Account.Core pin
+      # is satisfied by the Core packed in this same run - BEFORE anything is pushed. Only a local
+      # consistency check (not a registry check); Core is pushed first below. net10.0 only.
       - name: Verify packed packages restore
         if: hashFiles('artifacts/*.nupkg') != ''
         run: |
           set -e
           ART="$(pwd)/artifacts"
-          for f in "$ART"/ARC76Account.*.nupkg; do
-            id=$(basename "$f" | sed -E 's/\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.nupkg$//')
-            [ "$id" = "ARC76Account.Core" ] && continue
-            ver=$(basename "$f" .nupkg | sed "s/^$id\.//")
+          VER="${{ steps.version.outputs.version }}"
+          for f in "$ART"/ARC76Account.*."$VER".nupkg; do
+            id=$(basename "$f" ".$VER.nupkg")
+            if [ "$id" = "ARC76Account.Core" ]; then continue; fi
             dir=$(mktemp -d)
-            (cd "$dir" && dotnet new classlib -n smoke -f net10.0 && cd smoke &&               dotnet add package "$id" --version "$ver" --source "$ART" --source https://api.nuget.org/v3/index.json)
-            echo "OK: $id $ver restores"
+            cd "$dir"
+            dotnet new classlib -n smoke -f net10.0
+            cd smoke
+            dotnet add package "$id" --version "$VER" \
+              --source "$ART" --source https://api.nuget.org/v3/index.json
+            echo "OK: $id $VER restores"
+            cd "$GITHUB_WORKSPACE"
           done
 
       # See https://learn.microsoft.com/nuget/nuget-org/trusted-publishing
@@ -153,11 +148,22 @@ jobs:
 
       # Core is pushed FIRST: every chain package pins Core to its own exact version, so Core must
       # exist on the registry before (or at the same moment as) the packages depending on it.
+      # Core is pushed FIRST (once), then the rest: every chain package pins Core to its own exact
+      # version, so Core must exist on the registry before the packages depending on it.
       - name: Push
         if: hashFiles('artifacts/*.nupkg') != ''
         run: |
           set -e
-          for f in artifacts/ARC76Account.Core.*.nupkg artifacts/*.nupkg; do
-            [ -f "$f" ] || continue
-            dotnet nuget push "$f"               --api-key ${{ steps.login.outputs.NUGET_API_KEY }}               --source https://api.nuget.org/v3/index.json               --skip-duplicate
+          push() {
+            dotnet nuget push "$1" \
+              --api-key ${{ steps.login.outputs.NUGET_API_KEY }} \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+          }
+          for f in artifacts/ARC76Account.Core.*.nupkg; do
+            [ -f "$f" ] && push "$f"
+          done
+          for f in artifacts/*.nupkg; do
+            case "$f" in artifacts/ARC76Account.Core.*) continue ;; esac
+            push "$f"
           done

@@ -171,9 +171,13 @@ already overrides everything in `Directory.Build.props` (see the comment block a
 above) and passes it via `-p:Version=`/`-p:AssemblyVersion=`/`-p:FileVersion=` to `dotnet
 build`/`dotnet pack`, so **don't** edit `Directory.Build.props` to bump a version for a release
 — there's nothing to bump. What actually gates a release is which package(s) get packed and
-pushed: the workflow diffs each project's own folder against the previous commit and only
-packs+pushes the ones that changed (see the workflow's "Determine changed packages" step) —
-a `ARC76Account.Bitcoin`-only change does not republish the other five. Update `README.md`
+pushed: if anything that ships in a nupkg changed (any file under `dotnet/` except `TestARC76/`,
+`AGENTS.md`, `AI_INTEGRATION.md`), the workflow packs and pushes **all six** projects at one
+version, Core first (see "Determine changed packages"). This is deliberate — each chain package
+pins `ARC76Account.Core` to its own exact version, so publishing a single project makes it depend
+on a Core version that was never published (audit #4: `ARC76Account.Algorand` 1.0.5/1.0.6 were
+uninstallable). Don't "optimise" this back to per-project publishing. A pre-push step restores
+every packed chain package from the fresh artifacts as a smoke test. Update `README.md`
 (and add a migration guide entry, if the change is breaking) before merging, since publishing
 itself happens automatically on merge to `master`.
 

@@ -77,7 +77,7 @@ whatever's merely committed to `master`.
 | Package                    | Registry | Latest deployed    | Last checked |
 |-----------------------------|----------|---------------------|--------------|
 | `ARC76Account.Core`         | NuGet    | `1.0.4.2026080407` | 2026-10-19 (audit #4) |
-| `ARC76Account.Algorand`     | NuGet    | `1.0.6.2026101918` (**uninstallable** - see audit #4) | 2026-10-19 (audit #4) |
+| `ARC76Account.Algorand`     | NuGet    | `1.0.6.2026101918` (uninstallable at audit #4 - re-verify; fix merged in PR #8) | 2026-10-19 (audit #4) |
 | `ARC76Account.Ethereum`     | NuGet    | `1.0.4.2026080407` | 2026-10-19 (audit #4) |
 | `ARC76Account.Bitcoin`      | NuGet    | `1.0.4.2026080407` | 2026-10-19 (audit #4) |
 | `ARC76Account.BitcoinCash`  | NuGet    | `1.0.4.2026080407` | 2026-10-19 (audit #4) |
