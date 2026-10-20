@@ -15,12 +15,6 @@ on:
 permissions:
   contents: read
 
-# Never run two publishes at once: interleaved pushes of different versions could leave the
-# registry's latest Core/chain packages inconsistent.
-concurrency:
-  group: publish-nuget
-  cancel-in-progress: false
-
 jobs:
   publish:
     name: Build, test, pack, and publish packages
