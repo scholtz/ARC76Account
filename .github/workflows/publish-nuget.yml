@@ -1,9 +1,9 @@
 name: Publish NuGet packages
 
 # Only runs when dotnet/ actually changed - changes under audits/ (or typescript/, python/,
-# root docs) never trigger this. Within that, only the specific project(s) whose own folder
-# changed get packed and pushed (see "Determine changed packages" below) - e.g. a
-# Bitcoin-only change does not republish Algorand/Ethereum/BitcoinCash/Solana/Core.
+# root docs) never trigger this. Within that, if anything that ships in a nupkg changed, ALL
+# six packages are packed and pushed together at one version, Core first (see "Determine
+# changed packages" below for why per-project publishing is unsafe).
 on:
   push:
     branches: [master]
@@ -146,8 +146,6 @@ jobs:
         with:
           user: ${{ secrets.NUGET_USER }}
 
-      # Core is pushed FIRST: every chain package pins Core to its own exact version, so Core must
-      # exist on the registry before (or at the same moment as) the packages depending on it.
       # Core is pushed FIRST (once), then the rest: every chain package pins Core to its own exact
       # version, so Core must exist on the registry before the packages depending on it.
       - name: Push

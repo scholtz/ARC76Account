@@ -107,9 +107,8 @@ split between root and per-language).
 Three GitHub Actions workflows handle releases:
 
 - **[`.github/workflows/publish-nuget.yml`](.github/workflows/publish-nuget.yml)** — triggers
-  only on changes under `dotnet/`, then builds+tests everything but only packs+pushes the
-  specific project(s) whose own folder actually changed (e.g. a Bitcoin-only change doesn't
-  republish the other five). Publishes via NuGet **Trusted Publishing** (OIDC — no API key
+  only on changes under `dotnet/`, then builds+tests everything and packs+pushes all six
+  packages together at one version (Core first) when any shipped file changed. Publishes via NuGet **Trusted Publishing** (OIDC — no API key
   stored anywhere).
 - **[`.github/workflows/publish-npm.yml`](.github/workflows/publish-npm.yml)** — triggers only
   on changes under `typescript/`, and independently builds+tests+publishes **each** `@arc76/*`

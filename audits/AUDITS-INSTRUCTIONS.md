@@ -111,8 +111,9 @@ Notes as of 2026-10-19 audit #4 (`audits/2026-10-19-audit-report.md`):
 - NuGet was republished at `1.0.4.2026080407` (Core + Ethereum/Bitcoin/BitcoinCash/Solana):
   audit #3's two Highs are resolved and verified live.
 - `ARC76Account.Algorand` `1.0.5`/`1.0.6` pin an exact `ARC76Account.Core` of their own version
-  that was never published (the pipeline packs only changed projects) - a fresh restore fails
-  with NU1102. A `workflow_dispatch` of `publish-nuget.yml` (publishes all six) is needed.
+  that was never published (the pipeline then packed only changed projects) - a fresh restore
+  failed with NU1102. PR #8 makes the pipeline publish all six together, Core first; the next
+  audit must confirm a publish actually ran and the newest Algorand installs.
 - Falcon-1024 (Algorand post-quantum) accounts are now in scope in all three languages
   (shared vectors `accounts.falcon`); the .NET packages are `net10.0`-only.
 - npm `1.8.2026101919` and PyPI `1.4.2026101919` verified clean.
@@ -226,7 +227,7 @@ this repository, without changing a single line here.
   resolved core version — not by reading ranges alone.
 - **Check every dependent's *latest* version, not just that some version installs** (added in
   audit #4): NuGet chain packages pin `ARC76Account.Core` to their own exact version, and the
-  pipeline publishes only changed projects, so a single-chain commit can ship a chain package
+  pipeline (before PR #8) published only changed projects, so a single-chain commit could ship a chain package
   whose Core pin was never published. For each package do a fresh `dotnet add package` against
   the *latest* version (use a `net10.0` project - the packages target only net10.0) and confirm
   it restores; also confirm each dependency version in the nuspec exists on the registry.
