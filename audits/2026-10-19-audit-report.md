@@ -140,7 +140,7 @@ All nine phases of `AUDITS-INSTRUCTIONS.md` were performed:
   `[1.0.4,)` floor via `PackageReference` with `PrivateAssets`/explicit version). Then add a
   post-publish smoke step doing a fresh `dotnet add package` of each pushed chain package.
   Consider unlisting `1.0.5` / `1.0.6` once a good version is out.
-- **Status**: **Open** — requires a publish run this audit cannot trigger.
+- **Status**: **Fixed in source (branch `audit-4-fixes`); registry still broken until the next NuGet publish runs** — re-verify with a fresh restore afterwards.
 
 ### [LOW] Transitive `MessagePack 3.1.8` (via `Algorand5`) has a known moderate advisory
 
@@ -153,7 +153,7 @@ All nine phases of `AUDITS-INSTRUCTIONS.md` were performed:
   path, but applications that use Algorand5's algod models on untrusted data inherit it.
 - **Recommendation**: add a direct `<PackageReference Include="MessagePack" Version="3.1.9" />`
   (or newer) to the Algorand project, or bump Algorand5 when it ships the fix.
-- **Status**: Open (new).
+- **Status**: Fixed in source (`Algorand5` 5.0.3.2026101923; vulnerability scan clean).
 
 ### [LOW] (carried) npm publishes with a long-lived classic automation token; NuGet and PyPI use OIDC
 
@@ -170,8 +170,8 @@ All nine phases of `AUDITS-INSTRUCTIONS.md` were performed:
   `bitcoinjs-lib` 7.0.1 (7.0.4), `ecpair` 3.0.1 (3.0.2), `Nethereum.Signer` 6.1.0 (7.0.0
   available — a major behind), `NBitcoin` 10.0.7 (10.0.17), `Microsoft.Extensions.Options`
   10.0.10 (10.0.13) — all within the declared ranges for npm; NuGet pins are exact.
-- **Status**: Open (monitoring). Consider bumping `Nethereum.Signer` to 7.x and NBitcoin to
-  10.0.17 in the next .NET release, after a full vector run.
+- **Status**: Open (monitoring). Partially fixed in source (NBitcoin, Options, algosdk, bitcoinjs-lib, ecpair
+  bumped). `Nethereum.Signer` 7.x deliberately NOT adopted: a major bump of a type consumers use directly.
 
 ### [LOW] (carried) Example/test password is a low-entropy public digit string
 
@@ -206,7 +206,7 @@ All nine phases of `AUDITS-INSTRUCTIONS.md` were performed:
   none of these ship in any tarball.
 - **Recommendation**: refresh `jest`/`ts-jest` to clear CI noise (jest 30.5.2 / ts-jest 29.4.15
   available).
-- **Status**: Open (hygiene).
+- **Status**: Partially fixed (dev tooling refreshed; 5 dev-only advisories remain, `--prod` clean).
 
 ### [INFORMATIONAL] The `AI_INTEGRATION.md` guides do not mention the Falcon API
 
@@ -216,7 +216,7 @@ All nine phases of `AUDITS-INSTRUCTIONS.md` were performed:
   (Falcon docs already carry the right warning) but the guides are in scope as consumer guidance.
 - **Recommendation**: add a short Falcon section to `dotnet/`, `typescript/` and `python/`
   `AI_INTEGRATION.md`, repeating that it shares the Ed25519 account's password material.
-- **Status**: Open (new).
+- **Status**: Fixed in source.
 
 ### [INFORMATIONAL] (carried) Legacy packages (`arc76` npm, `AlgorandARC76Account` NuGet) still live, undeprecated
 
@@ -266,7 +266,7 @@ All nine phases of `AUDITS-INSTRUCTIONS.md` were performed:
 |---|---|
 | High - Algorand uninstallable | `publish-nuget.yml` now always packs Core whenever any chain project is packed, and a new pre-push step restores every packed chain package from the fresh artifacts. **Still needs a `workflow_dispatch`/merge-triggered publish to repair the registry**; re-verify with a fresh restore afterwards. |
 | Low - MessagePack advisory | `Algorand5` bumped to `5.0.3.2026101923`; `dotnet list package --vulnerable --include-transitive` is clean for all projects. |
-| Low - stale deps | NBitcoin 10.0.17, NBitcoin.Altcoins 6.0.11, Nethereum.Signer 7.0.0, Microsoft.Extensions.Options 10.0.13, algosdk ^3.9.0, bitcoinjs-lib ^7.0.4, ecpair ^3.0.2 (62/62 .NET and 60/60 TypeScript tests pass). Chaos.NaCl / tweetnacl / cashaddrjs / buffer / PyPI base58+bech32 have no maintained drop-in replacement and remain monitored. |
+| Low - stale deps | NBitcoin 10.0.17, NBitcoin.Altcoins 6.0.11, Microsoft.Extensions.Options 10.0.13, algosdk ^3.9.0, bitcoinjs-lib ^7.0.4, ecpair ^3.0.2 (62/62 .NET and 60/60 TypeScript tests pass). Chaos.NaCl / tweetnacl / cashaddrjs / buffer / PyPI base58+bech32 have no maintained drop-in replacement and remain monitored. |
 | Info - AI guides lack Falcon | Falcon sections (with the shared-secret warning) added to all three `AI_INTEGRATION.md`. |
 | Info - dev-only pnpm advisories | jest/ts-jest/prettier/@types/node refreshed; 5 dev-only advisories remain (js-yaml, brace-expansion, sprintf-js via jest coverage tooling; `pnpm audit --prod` is clean; pnpm overrides did not take effect and `sprintf-js` has no patched release yet). |
 | Low - npm token, example password; Info - legacy deprecation, PyPI `arc76` name | Not code changes: maintainer registry/account actions or intentionally retained. |

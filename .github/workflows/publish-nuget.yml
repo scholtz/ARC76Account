@@ -87,7 +87,8 @@ jobs:
           FORCE_ALL=false
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
             FORCE_ALL=true
-          elif ! git diff --quiet "$BEFORE" "${{ github.sha }}" -- "ARC76Account.Core/"; then
+          elif ! git diff --quiet "$BEFORE" "${{ github.sha }}" -- "ARC76Account.Core/" Directory.Build.props Directory.Build.targets Directory.Packages.props; then
+            # Core changed, or a shared build/metadata file affecting every project changed.
             FORCE_ALL=true
           fi
           for name in "${PROJECTS[@]}"; do
@@ -135,7 +136,7 @@ jobs:
             [ "$id" = "ARC76Account.Core" ] && continue
             ver=$(basename "$f" .nupkg | sed "s/^$id\.//")
             dir=$(mktemp -d)
-            (cd "$dir" && dotnet new classlib -n smoke -f net10.0 >/dev/null && cd smoke               && dotnet add package "$id" --version "$ver" --source "$ART" --source https://api.nuget.org/v3/index.json >/dev/null)
+            (cd "$dir" && dotnet new classlib -n smoke -f net10.0 && cd smoke &&               dotnet add package "$id" --version "$ver" --source "$ART" --source https://api.nuget.org/v3/index.json)
             echo "OK: $id $ver restores"
           done
 
@@ -150,10 +151,13 @@ jobs:
         with:
           user: ${{ secrets.NUGET_USER }}
 
+      # Core is pushed FIRST: every chain package pins Core to its own exact version, so Core must
+      # exist on the registry before (or at the same moment as) the packages depending on it.
       - name: Push
         if: hashFiles('artifacts/*.nupkg') != ''
-        run: >
-          dotnet nuget push "artifacts/*.nupkg"
-          --api-key ${{ steps.login.outputs.NUGET_API_KEY }}
-          --source https://api.nuget.org/v3/index.json
-          --skip-duplicate
+        run: |
+          set -e
+          for f in artifacts/ARC76Account.Core.*.nupkg artifacts/*.nupkg; do
+            [ -f "$f" ] || continue
+            dotnet nuget push "$f"               --api-key ${{ steps.login.outputs.NUGET_API_KEY }}               --source https://api.nuget.org/v3/index.json               --skip-duplicate
+          done
