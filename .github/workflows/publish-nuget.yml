@@ -127,11 +127,14 @@ jobs:
             if [ "$id" = "ARC76Account.Core" ]; then continue; fi
             dir=$(mktemp -d)
             cd "$dir"
+            export NUGET_PACKAGES="$dir/pkgs" # isolated cache: force extraction from the packed artifacts
             dotnet new classlib -n smoke -f net10.0
             cd smoke
-            dotnet add package "$id" --version "$VER" \
-              --source "$ART" --source https://api.nuget.org/v3/index.json
-            dotnet list package --include-transitive | grep -q "ARC76Account.Core .*$VER"               || { echo "$id did not resolve ARC76Account.Core $VER" >&2; exit 1; }
+            # `dotnet add package --source` accepts one source only, so configure both here.
+            dotnet new nugetconfig
+            dotnet nuget add source "$ART" --name artifacts --configfile nuget.config
+            dotnet add package "$id" --version "$VER"
+            dotnet list package --include-transitive | grep -F "ARC76Account.Core" | grep -qF "$VER"               || { echo "$id did not resolve ARC76Account.Core $VER" >&2; exit 1; }
             echo "OK: $id $VER restores with Core $VER"
             cd "$GITHUB_WORKSPACE"
           done
